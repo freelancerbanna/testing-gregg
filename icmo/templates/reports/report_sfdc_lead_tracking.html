@@ -1,0 +1,165 @@
+{% extends 'reports/base_reports.html' %}
+{% load deslugify from icmo_utils %}
+{% block report_title_head %}Lead Tracking Over Time{% endblock %}
+{% block report_title_page_title %}Lead Tracking Over Time{% endblock %}
+{% block report_title_box_title %}Lead Tracking Over Time - {{ report_period|title }}{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function () {
+            $("#grid").kendoGrid({
+                dataSource: {
+                    schema: {
+                        model: {
+                            fields: {
+                                lead_source: {type: "string"},
+                                total: {type: "number"},
+                                unqualified: {type: "number"},
+                                nurturing: {type: "number"},
+                                asked_to_meet: {type: "number"},
+                                met_but_nothing_else: {type: "number"},
+                                converted: {type: "number"},
+                                closed_won: {type: "number"},
+                                closed_lost: {type: "number"}
+                            }
+                        }
+                    },
+                    aggregate: [
+                        {field: 'total', aggregate: 'sum'},
+                        {field: 'unqualified', aggregate: 'sum'},
+                        {field: 'nurturing', aggregate: 'sum'},
+                        {field: 'asked_to_meet', aggregate: 'sum'},
+                        {field: 'met_but_nothing_else', aggregate: 'sum'},
+                        {field: 'converted', aggregate: 'sum'},
+                        {field: 'closed_won', aggregate: 'sum'},
+                        {field: 'closed_lost', aggregate: 'sum'},
+                    ]
+                },
+                columns: [
+                    {field: 'lead_source', title: 'Lead Source'},
+                    {
+                        field: 'total',
+                        title: 'Total',
+                        aggregates: ['sum'],
+                        footerTemplate: "#=sum#"
+                    },
+                    {
+                        field: 'unqualified',
+                        title: 'Unqualified',
+                        aggregates: ['sum'],
+                        footerTemplate: "#=sum#"
+                    },
+                    {
+                        field: 'nurturing',
+                        title: 'Nurturing',
+                        aggregates: ['sum'],
+                        footerTemplate: "#=sum#"
+                    },
+                    {
+                        field: 'asked_to_meet',
+                        title: 'Asked to Meet',
+                        aggregates: ['sum'],
+                        footerTemplate: "#=sum#"
+                    },
+                    {
+                        field: 'met_but_nothing_else',
+                        title: 'Met but Nothing Else',
+                        aggregates: ['sum'],
+                        footerTemplate: "#=sum#"
+                    },
+                    {
+                        field: 'converted',
+                        title: 'Converted',
+                        aggregates: ['sum'],
+                        footerTemplate: "#=sum#"
+                    },
+                    {
+                        field: 'closed_won',
+                        title: 'Closed Won',
+                        aggregates: ['sum'],
+                        footerTemplate: "#=sum#"
+                    },
+                    {
+                        field: 'closed_lost',
+                        title: 'Closed Lost',
+                        aggregates: ['sum'],
+                        footerTemplate: "#=sum#"
+                    }
+                ],
+                sortable: true
+            });
+        }());
+    </script>
+{% endblock %}
+{% block box_body %}
+    <div class="filter">
+        <form class="form-inline" method="GET">
+            <div class="form-group">
+                <label for="periodMonth">Period: </label>
+                <select class="form-control" id="reportMonth" name="reportMonth">
+                    {% for period in report_periods %}
+                        <option value="{{ period }}"
+                                {% if period == report_period %}selected{% endif %}>
+                            {{ period|deslugify }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="reportStartingStatus">Starting Status: </label>
+                <select class="form-control" id="reportStartingStatus" name="reportStartingStatus">
+                    {% for status in report_starting_statuses %}
+                        <option value="{{ status }}"
+                                {% if status == report_starting_status %}selected{% endif %}>
+                            {{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="reportSource">Source: </label>
+                <select class="form-control" id="reportSource" name="reportSource">
+                    <option value="">All</option>
+                    {% for source in report_sources %}
+                        <option value="{{ source }}"
+                                {% if source == report_source %}selected{% endif %}>
+                            {{ source }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <input type="submit" class="btn btn-bordered btn-primary" value="Run Report"/>
+        </form>
+    </div>
+    <table id='grid'>
+        <tbody>
+        {% for source_name, source_outcomes in sources.items %}
+            <tr>
+                <td>{{ source_name }}</td>
+                <td>{{ source_outcomes.total }}</td>
+                <td>{{ source_outcomes.unqualified }}</td>
+                <td>{{ source_outcomes.nurturing }}</td>
+                <td>{{ source_outcomes.asked_to_meet }}</td>
+                <td>{{ source_outcomes.met_but_nothing_else }}</td>
+                <td>{{ source_outcomes.converted }}</td>
+                <td>{{ source_outcomes.closed_won }}</td>
+                <td>{{ source_outcomes.closed_lost }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="row">
+        <div class="col-md-12 small">
+            <b>About</b>
+            <p>This report looks at the live, current status of outcomes for Leads/Opportunities
+               that originated in the specified month.</p>
+            <p>Unqualified: Number of Leads/Opportunities that have 'unqualified' in their final
+               status/stage.</p>
+            <p>Nurturing: Status/Stages are given a number based on their order in the Salesforce
+               drop down. Nurturing is the number of leads/opportunities whose current status/stage has a lower number than
+               any of their previous stages (ie they've gone "Backwards").</p>
+            <p>Asked to meet:  Number of Leads/Opportunities that have ever had the Asked to Meet status.</p>
+            <p>Met But Nothing Else:  Number of Leads/Opportunities that have had the Meeting Completed status but have not progressed further.</p>
+            <p>Converted:  Number of Leads/Opportunities that have had the Opportunity Conversion status.</p>
+            <p>Closed Won:  Number of Leads/Opportunities that have had the Closed Won status.</p>
+            <p>Closed Lost:  Number of Leads/Opportunities that have had the Closed Lost status.</p>
+        </div>
+    </div>
+{% endblock %}

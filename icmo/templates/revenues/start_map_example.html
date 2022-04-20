@@ -1,0 +1,107 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load blank_kwargs_url from icmo_utils %}
+{% load i18n %}
+{% block title %}Get Started{% endblock %}
+{% block page_title %}Get Started{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-sm-offset-1 col-sm-10">
+                            <div class="row">
+                                <div class="col-md-2 col-sm-4 col-xs-6">
+                                    <a href="{% blank_kwargs_url 'revenue_plans_list' %}">
+                                        <div class="start-map">
+                                            <img class='img img-responsive'
+                                                 src="{% static 'img/startmap/step%201.png' %}"
+                                                    ><br>
+                                            <span>Create Revenue Plan</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-6">
+                                    <a href="{% blank_kwargs_url 'program_mix' %}">
+                                        <div class="start-map">
+                                            <img class='img img-responsive'
+                                                 src="{% static 'img/startmap/step%202.png' %}"
+                                                    ><br>
+                                            <span>Develop Marketing Mix</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-6">
+                                    <a href="{% blank_kwargs_url 'budgets' %}">
+                                        <div class="start-map">
+                                            <img class='img img-responsive'
+                                                 src="{% static 'img/startmap/step%203.png' %}"
+                                                    ><br>
+                                            <span>Construct Budget</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-6">
+                                    <a href="{% blank_kwargs_url 'resources_gantt' %}">
+                                        <div class="start-map">
+                                            <img class='img img-responsive'
+                                                 src="{% static 'img/startmap/step%204.png' %}"
+                                                    ><br>
+                                            <span>Manage Resources & Schedule</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-6">
+                                    <a href="{% blank_kwargs_url 'performance' %}">
+                                        <div class="start-map">
+                                            <img class='img img-responsive'
+                                                 src="{% static 'img/startmap/step%205.png' %}"
+                                                    ><br>
+                                            <span>Measure & Record Performance</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-6">
+                                    <a href="{% blank_kwargs_url 'dashboards' %}">
+                                        <div class="start-map">
+                                            <img class='img img-responsive'
+                                                 src="{% static 'img/startmap/step%206.png' %}"
+                                                    ><br>
+                                            <span>Review Results</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12 text-center start-buttons">
+                            <div class="btn-group" role="group" aria-label="...">
+                                <!--<a class="btn btn-primary btn-bordered btn-lg">
+                                    Add User
+                                </a>-->
+                                <a class="btn btn-primary btn-bordered btn-lg" href="{% blank_kwargs_url 'resources_gantt' %}">
+                                    Add Task
+                                </a>
+                                <a class="btn btn-primary  btn-bordered btn-lg" href="{% blank_kwargs_url 'budgets' %}">
+                                    Add Budget Item
+                                </a>
+                                <a class="btn btn-primary  btn-bordered btn-lg" href="{% blank_kwargs_url 'performance' %}">
+                                    Record Results
+                                </a>
+                                <!--<a class="btn btn-primary  btn-bordered btn-lg">
+                                    Refer-a-Friend
+                                </a>-->
+                                <a class="btn btn-primary  btn-bordered btn-lg" href="{% blank_kwargs_url 'help' %}">
+                                    Help
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

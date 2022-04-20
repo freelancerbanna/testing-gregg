@@ -1,0 +1,16 @@
+{% load deslugify from icmo_utils %}
+<div class="filter">
+    <form class="form-inline" method="GET">
+        <div class="form-group">
+            <label for="periodMonth">Period:  </label>
+            <select class="form-control" id="reportMonth" name="reportMonth">
+                {% for period in report_periods %}
+                    <option value="{{ period }}"
+                            {% if period == report_period %}selected{% endif %}>
+                        {{ period|deslugify }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <input type="submit" class="btn btn-bordered btn-primary" value="Run Report"/>
+    </form>
+</div>

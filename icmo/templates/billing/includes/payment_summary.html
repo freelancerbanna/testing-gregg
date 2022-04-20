@@ -1,0 +1,50 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><b>Payment Terms Summary</b></h3>
+    </div>
+        <table class="table no-margin table-striped paytable panel-body">
+            {% if loading_bar %}
+                <tr class="paytable-loading">
+                    <th>Updating...</th>
+                    <td>
+                        <div class="progress margin paytable-loading">
+                            <div class="progress-bar progress-bar-striped active"
+                                 role="progressbar" aria-valuenow="100"
+                                 aria-valuemin="0" aria-valuemax="100"
+                                 style="width: 100%">
+                                <span class="sr-only">Loading</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endif %}
+            <tr>
+                <th width="25%">Plan</th>
+                <td class="paytable_plan">{{ subscription.plan.name }}</td>
+            </tr>
+            <tr>
+                <th>Billing</th>
+                <td class="paytable_interval">{{ subscription.plan.human_interval|title }}</td>
+            </tr>
+            <tr>
+                <th>Subscription Fee</th>
+                <td class="paytable_subfee {% if subscription.subscription_fee_coupon_applied %}text-success{% endif %}">
+                    {{ subscription.subscription_fee_terms }}</td>
+            </tr>
+            <tr>
+                <th>Setup Fee</th>
+                <td class="paytable_setupfee {% if subscription.setup_fee_coupon_applied %}text-success{% endif %}">
+                    {{ subscription.setup_fee_terms }}</td>
+            </tr>
+            {% if coupon_form %}
+                <tr>
+                    <td><a href="#" class="small admin_code">Admin Code</a></td>
+                    <td>
+                        <div class="form-group col-xs-6 div_id_code">
+                            {{ coupon_form.code }}
+                        </div>
+                    </td>
+                </tr>
+            {% endif %}
+        </table>
+</div>

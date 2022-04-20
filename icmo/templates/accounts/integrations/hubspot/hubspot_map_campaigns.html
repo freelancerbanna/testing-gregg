@@ -1,0 +1,119 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags icmo_utils %}
+
+{% block title %}HubSpot Integration - Map Campaigns{% endblock %}
+{% block page_title %}HubSpot Integration{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="application/javascript">
+        $(function () {
+            $('.program-name').change(function (e) {
+                var slug = $(e.target).data('campaign-slug');
+                var program_name = $(e.target).val();
+                $('#' + slug).find('.segment_program').each(function (idx, value) {
+                    $(value).find('option').each(function (idx2, option) {
+                        if ($(option).html() == program_name) {
+                            $(option).attr('selected', true);
+                        } else {
+                            $(option).attr('selected', false);
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Map HubSpot Campaigns to iCMO Programs
+                        for {{ campaign_revenue_plan.name }}</h3>
+                    <br><a
+                        href="{% blank_kwargs_url 'hubspot_setup' %}">Back</a>
+                </div>
+                <div class="box-body">
+                    <p>
+                        Choose which programs each HubSpot campaign should be associated with.
+                        Contacts
+                        will be allocated to programs based on their Segment Mapping and their
+                        HubSpot Campaign (mapped to an iCMO program). Therefore
+                        each HubSpot Campaign can be mapped to programs in multiple segments. The
+                        Quick Select drop down
+                        will select all segment programs of the same name, for convenience. Once
+                        you are done
+                        editing your maps, hit the save button below.
+                    </p>
+                    <br>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Hubspot Source Name</th>
+                                <th>iCMO Program Quick Select</th>
+                                <th>iCMO Segment Programs</th>
+                            </tr>
+                            {% for campaign_map in campaign_maps %}
+                                <tr id="{{ campaign_map.slug }}">
+                                    <td>{{ campaign_map.name }}<br>
+                                        {% with campaign_map.event_breakdown as ebd %}
+                                            <small>
+                                                Subscribers: {{ ebd.subscriber }},
+                                                Leads: {{ ebd.lead }},<br>
+                                                MQLs: {{ ebd.marketingqualifiedlead }},
+                                                Opportunities: {{ ebd.opportunity }},<br>
+                                                SQLs: {{ ebd.salesqualifiedlead }},
+                                                Customers: {{ ebd.customer }}
+                                            </small>
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <select data-campaign-slug="{{ campaign_map.slug }}"
+                                                class="program-name">
+                                            <option value="">None</option>
+                                            {% for program_name in program_names %}
+                                                <option value="{{ program_name }}"
+                                                        {% if campaign_map.program_name == program_name %}selected{% endif %}>
+                                                    {{ program_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <table>
+                                            {% for segment in segments %}
+                                                <tr>
+                                                    <td>
+                                                        {{ segment.name }}
+                                                    </td>
+                                                    <td>
+                                                        <select name="campaign-{{ campaign_map.slug }}-segment-{{ segment.slug }}-program"
+                                                                class="segment_program">
+                                                            <option value="">None</option>
+                                                            {% for program in segment.programs.all %}
+                                                                <option value="{{ program.slug }}"
+                                                                        {% if campaign_map.segment_program_map|get_dictionary_item:segment.slug == program.slug %}selected{% endif %}
+                                                                >{{ program.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <div class="form-actions pull-right">
+                            <input type="submit" name="submit" value="Save"
+                                   class="btn btn-primary btn-bordered"
+                                   id="submit-save">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

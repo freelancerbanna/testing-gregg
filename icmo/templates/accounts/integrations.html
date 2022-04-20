@@ -1,0 +1,34 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags static %}
+{% load blank_kwargs_url from icmo_utils %}
+
+{% block title %}Integrations{% endblock %}
+{% block page_title %}Integrations{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Available Integrations</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% blank_kwargs_url 'hubspot_setup' %}"
+                               title="HubSpot">
+                                <img height=75  src="{% static 'img/integrations/hubspot.png' %}"
+                                     class="img">
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% blank_kwargs_url 'sfdc_manage' %}">
+                                <img height=75 src="{% static 'img/integrations/salesforce.png' %}"
+                                     class="img">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

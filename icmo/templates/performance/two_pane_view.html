@@ -1,0 +1,79 @@
+{% load full_month from icmo_utils %}
+<div class="horizontalSplit" id="grid-{{ segment.slug }}-splitter">
+    <div class="pane-content left-pane">
+        <div id="treelist-{{ segment.slug }}" class="performance_program_selector"
+             data-tools="treelist-{{ segment.slug }}-tools"
+             data-api-url="{{ api_url }}{{ segment.slug }}/budget_line_items/">
+        </div>
+    </div>
+    <div class="pane-content right-pane">
+        <div class="campaign-editor-title">
+            Campaign Editor
+        </div>
+        <div id='container-grid-{{ segment.slug }}'>
+            <div class="grid-tools grid-{{ segment.slug }}-tools" id="grid-{{ segment.slug }}-tools">
+                <div class="pull-left campaign-month-selector">
+                    <button class="btn btn-primary btn-sm grid-prev-month"
+                            title="Previous Month">
+                        <i class="fa fa-arrow-left"></i>
+                    </button>
+                    <select class="input-sm grid-month" name="month">
+                        {% for month in selected_company.fiscal_months_by_name %}
+                            <option value="{{ month }}"
+                                    {% if month == time_periods_current_month %}
+                                    selected{% endif %}>
+                                {{ month|full_month }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-primary btn-sm grid-next-month"
+                            title="Next Month">
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+                    <button class="btn btn-primary btn-sm grid-today"
+                            title="Jump to Current Month">
+                        <i class="fa fa-calendar"></i>
+                    </button>
+                </div>
+                <div class="pull-right">
+                    <i title='Syncing'
+                       class="grid-syncing small text-red fa fa-refresh fa-spin"
+                       style="display:none"></i>&nbsp;&nbsp;
+                    <button class="btn btn-primary btn-bordered btn-sm grid-add"
+                            title="Add a new campaign">
+                        <i class="fa fa-plus"></i>&nbsp;
+                        New Campaign
+                    </button>
+                    <button class="btn btn-primary btn-sm grid-cancel"
+                            title="Cancel changes"
+                            disabled aria-disabled="true">
+                        <i class="fa fa-undo"></i>
+                    </button>
+                    <div class="btn-group" role="group" aria-label="...">
+                        <button class="btn btn-primary btn-sm grid-pdf"
+                                title="Export to PDF">
+                            <i class="fa fa-file-pdf-o"></i>
+                        </button>
+                        <button class="btn btn-primary btn-sm grid-excel"
+                                title="Export to Excel">
+                            <i class="fa fa-file-excel-o"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="grid-{{ segment.slug }}"
+                 data-tools="grid-{{ segment.slug }}-tools"
+                 data-program-slug=""
+                 data-api-url=""
+                 data-selected-month=""
+                 data-root-api-url="{{ api_url }}{{ segment.slug }}/programs/">
+            </div>
+        <div class="clearfix">&nbsp;</div>
+
+        </div>
+        <div id="select-a-program-grid-{{ segment.slug }}">
+            <p>Select a program from the
+            menu on the left.</p></div>
+    </div>
+</div>
+<div class="clearfix">&nbsp;</div>

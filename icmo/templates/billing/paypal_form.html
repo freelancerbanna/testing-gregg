@@ -1,0 +1,41 @@
+<div class="panel panel-default credit-card-box">
+
+    <div class="panel-heading display-table">
+        <div class="row">
+            <div class="col-xs-2 col-sm-1">
+                <input class="form-control input-sm payment-selector" type="radio"
+                       name="payment_type" value="paypal" data-phoenix-exclude="true">
+            </div>
+            <div class="col-xs-6 col-sm-7">
+                <h3 class="panel-title display-td">Pay by ACH via Paypal</h3>
+            </div>
+            <div class="col-xs-4">
+                <i class="fa fa-cc-paypal pull-right"></i>
+                <i class="fa fa-university pull-right"></i>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body paypal-form-body collapse" aria-expanded="false">
+        <div class="row">
+            <div class="col-xs-12">
+                <P>
+                    Pay for your subscription by ACH with PayPal. You will be taken
+                    to your PayPal account to
+                    complete the transaction.
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <button id='paypal_subscribe_button' class="btn btn-success btn-lg btn-block"
+                        type="button"
+                        data-paypal-get-auth-url="{% url 'billing:paypal:paypal_get_auth_url' %}"
+                        data-target-url="{% url 'signup_create_account' %}"
+                        data-source-url="{% url 'signup' %}"
+                        >
+                    Subscribe by PayPal ACH
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

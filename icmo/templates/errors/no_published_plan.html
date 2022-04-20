@@ -1,0 +1,24 @@
+{% extends 'base_main.html' %}
+{% block title %}No Published Plan{% endblock %}
+{% block page_title %}No Published Plan{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">There are no published revenue plans for this company</h3>
+                </div>
+                <div class="box-body">
+                    <p>
+                        There are currently no published revenue plans for this company and this
+                        account is restricted to published revenue plans.  This content will be inaccessable
+                        until a revenue plan is published.
+                    </p>
+                    <p>
+                        <a href="#" class='btn btn-primary btn-bordered btn-large' onclick="history.go(-1);">Back to the Previous Page</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'icmo_users/email/base.html' %}
+{% load static %}
+{% block title %}Collaboration Invitation{% endblock %}
+{% block subject %}Collaboration Invitation{% endblock %}
+{% block email_type %}good{% endblock %}
+{% block content %}
+    <tr>
+        <td class="content-block">
+            You have been added as a collaborator on <b>{{company.name}}</b> by <b>{{ inviter.full_name }}</b>. You can
+            view and select this company from your Companies page under your Account, or by using
+            the link below.
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <a class='btn-primary'
+               href="https://{{ request.get_host }}{% url 'companies_list' %}">
+                View Companies Shared With Me
+            </a>
+        </td>
+    </tr>
+{% endblock %}

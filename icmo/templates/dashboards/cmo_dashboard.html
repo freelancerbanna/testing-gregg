@@ -1,0 +1,69 @@
+{% extends 'dashboards/base_dashboard.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize %}
+{% block title %}CMO Overview Dashboard{% endblock %}
+{% block page_title %}CMO Overview Dashboard{% endblock %}
+{% block app_summary_js %}
+    <script type="text/javascript">
+        ICMO.apps.dashboards.growthChart(
+                $('#company-{{ company.slug }}PlanGrowthChart'),
+                [{{ company.growth.goal.q1}}, {{ company.growth.goal.q2}}, {{ company.growth.goal.q3}}, {{ company.growth.goal.q4}}],
+                ['Q1', 'Q2', 'Q3', 'Q4'],
+                '#c6d741'
+        );
+        ICMO.apps.dashboards.growthChart(
+                $('#company-{{ company.slug }}ActualGrowthChart'),
+                [{{ company.growth.actual.q1}}, {{ company.growth.actual.q2}}, {{ company.growth.actual.q3}}, {{ company.growth.actual.q4}}],
+                ['Q1', 'Q2', 'Q3', 'Q4'],
+                '#62cdef'
+        );
+        ICMO.apps.dashboards.growthGage(
+                $('#company-{{ company.slug }}AnnualRevenueToDate'),
+                {{ company.growth.todate.annual.plan|divide:"1000000"}},
+                {{ company.growth.todate.annual.previous|divide:"1000000"}},
+                {{ company.growth.todate.annual.actual|divide:"1000000"}}
+        );
+        ICMO.apps.dashboards.growthGage(
+                $('#company-{{ company.slug }}QuarterRevenueToDate'),
+                {{ company.growth.todate.quarter.plan|divide:"1000000"}},
+                {{ company.growth.todate.quarter.previous|divide:"1000000"}},
+                {{ company.growth.todate.quarter.actual|divide:"1000000"}}
+        );
+        {% include 'dashboards/includes/bulletchartsjs.html' %}
+        ICMO.apps.dashboards.premade.budgetPlannedVsActualByMonth($("#company-{{ company.slug }}BudgetChart"));
+        ICMO.apps.dashboards.premade.budgetTotalChart($("#company-{{ company.slug }}BudgetTotalChart"), {{ company.funnel_data.budget_plan.amount }}, {{ company.funnel_data.budget_actual.amount }});
+    </script>
+{% endblock %}
+{% block app_segment_js %}
+    <script type="text/javascript">
+        {% for segment in segments %}
+            ICMO.apps.dashboards.growthChart(
+                    $('#segment-{{ segment.slug }}PlanGrowthChart'),
+                    [{{ segment.growth.goal.q1}}, {{ segment.growth.goal.q2}}, {{ segment.growth.goal.q3}}, {{ segment.growth.goal.q4}}],
+                    ['Q1', 'Q2', 'Q3', 'Q4'],
+                    '#c6d741'
+            );
+            ICMO.apps.dashboards.growthChart(
+                    $('#segment-{{ segment.slug }}ActualGrowthChart'),
+                    [{{ segment.growth.actual.q1}}, {{ segment.growth.actual.q2}}, {{ segment.growth.actual.q3}}, {{ segment.growth.actual.q4}}],
+                    ['Q1', 'Q2', 'Q3', 'Q4'],
+                    '#62cdef'
+            );
+            ICMO.apps.dashboards.growthGage(
+                    $('#segment-{{ segment.slug }}AnnualRevenueToDate'),
+                    {{ segment.growth.todate.annual.plan|divide:"1000000"}},
+                    {{ segment.growth.todate.annual.previous|divide:"1000000"}},
+                    {{ segment.growth.todate.annual.actual|divide:"1000000"}}
+            );
+            ICMO.apps.dashboards.growthGage(
+                    $('#segment-{{ segment.slug }}QuarterRevenueToDate'),
+                    {{ segment.growth.todate.quarter.plan|divide:"1000000"}},
+                    {{ segment.growth.todate.quarter.previous|divide:"1000000"}},
+                    {{ segment.growth.todate.quarter.actual|divide:"1000000"}}
+            );
+
+            ICMO.apps.dashboards.premade.budgetPlannedVsActualByMonth($("#segment-{{ segment.slug }}BudgetChart"));
+            ICMO.apps.dashboards.premade.budgetTotalChart($("#segment-{{ segment.slug }}BudgetTotalChart"), {{ segment.funnel_data.budget_plan.amount }}, {{ segment.funnel_data.budget_actual.amount }});
+        {% endfor %}
+    </script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% load humanize %}
+<div class="row">
+    {% for plan in subscription_plans %}
+        <div class="col-xs-12 col-sm-6">
+            <div class="panel panel-primary plan-choice {{ plan.slug }}">
+                <div class="panel-heading text-center">
+                    <h3 class="panel-title">
+                        {{ plan.name }}
+                    </h3>
+                </div>
+                <div class="panel-body no-padding">
+                    <div class="the-price text-center">
+                        <h1>
+                            ${{ plan.display_price|floatformat|intcomma }}
+                            <small>/{{ plan.interval }}</small>
+                        </h1>
+                        {% if plan.trial_period_days %}
+                            <small>{{ plan.trial_period_days }} day FREE trial</small>
+                        {% endif %}
+                        {% if plan.setup_fee_amount %}
+                            + <span data-toggle="tooltip" data-placement="right" class='tooltipped' title="{{plan.setup_fee_description}}">{{ plan.setup_fee_name|default:"One time Setup Fee" }}</span>
+                            ${{ plan.setup_fee_amount|floatformat|intcomma }}
+                        {% endif %}
+                    </div>
+                    <table class="table table-striped no-margin">
+                        <tr>
+                            <td>{{ plan.short_description }}</td>
+                        </tr>
+                        {% if plan.full_description %}
+                            <tr>
+                                <td class="plan-full-description">{{ plan.full_description }}</td>
+                            </tr>
+                        {% endif %}
+                        <tr>
+                            <td>
+                                Unlimited Users
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Unlimited Revenue Plans
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Unlimited Projects
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Billed {{plan.human_interval}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><B>
+                                {% if plan.limit_max_companies %}
+                                    {{ plan.limit_max_companies }}
+                                    Compan{{ plan.limit_max_companies|pluralize:"y,ies" }}
+                                {% else %}
+                                    Unlimited Companies
+                                {% endif %}
+                            </B></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="panel-footer clearfix">
+                    <a href="return void();" data-plan-id="{{ plan.slug }}"
+                       class="btn btn-primary col-xs-12 plan-select"
+                       role="button">
+                        Select
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>

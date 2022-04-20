@@ -1,0 +1,66 @@
+{% extends 'icmo_users/email/base.html' %}
+{% load static %}
+{% block title %}New Subscriber:  Account Activation Required{% endblock %}
+{% block subject %}New Subscriber:  Account Activation Required{% endblock %}
+{% block email_type %}warning{% endblock %}
+{% block content %}
+    <tr>
+        <td class="content-block">
+            A new account has been opened, the contract is attached. Account details and
+            activation instructions follow.
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <h3>New Account Contact Information</h3>
+            <table class="alignleft">
+                <tr>
+                    <th>Name</th>
+                    <td>{{ new_user.get_full_name }}</td>
+                </tr>
+                <tr>
+                    <th>Title</th>
+                    <td>{{ new_user.title }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ new_user.email }}</td>
+                </tr>
+                <tr>
+                    <th>Phone</th>
+                    <td>{{ new_user.phone_number }}</td>
+                </tr>
+                <tr>
+                    <th>Company</th>
+                    <td>{{ new_user.employer_name }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <h3>New Account Plan Details</h3>
+            <table class="alignleft">
+                <tr>
+                    <th>Plan</th>
+                    <td>{{ subscription.plan.name }}</td>
+                </tr>
+                {% if subscription.coupon %}
+                    <tr>
+                        <th>Admin Code Applied</th>
+                        <td>{{ subscription.coupon.code }}</td>
+                    </tr>
+                {% endif %}
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <h3>Activation</h3>
+            <a class='btn-primary'
+               href="https://{{ request.get_host }}{% url 'activate_new_user' token=new_user.activation_token %}">
+                Activate the User Account
+            </a>
+        </td>
+    </tr>
+{% endblock %}

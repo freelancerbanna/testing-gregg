@@ -1,0 +1,44 @@
+{% extends 'reports/base_reports.html' %}
+{% load icmo_utils humanize %}
+{% block report_title_head %}Performance By Program{% endblock %}
+{% block report_title_page_title %}Performance By Program{% endblock %}
+{% block report_title_box_title %}Performance By Program - {{ report_period|title }}{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function () {
+            ICMO.periods.periodGrid.create($('#dataGrid'), [
+                        'segment', 'program',
+                        'mql', 'budget', 'cost_per_mql'
+                    ],
+                    ['segment'], 'consolidated');
+        }());
+    </script>
+{% endblock %}
+{% block box_body %}
+    {% include 'reports/includes/period_filter.html' %}
+    <div class="row">
+        <div class="col-sm-9">
+            <div id="dataGrid"
+                 data-api-url="{{ revenue_plan_period_api_url }}?resolution=program&&period={{ report_period }}"
+            ></div>
+        </div>
+        <div class="col-sm-3 text-center">
+            <div class="stat-box">
+                <h4>Overall CPMQL</h4>
+                <div class="growth-number icmo-blue">{{ overall_average_cost_per_mql }}</div>
+                <small>Including all budget items</small>
+            </div>
+            <hr>
+            <div class="stat-box">
+                <h4>Average CPMQL per program</h4>
+                <div class="growth-number icmo-blue">
+                    ${{ program_average_cost_per_mql|floatformat:"2"|intcomma }}</div>
+                <small>Excluding non-program budget items</small>
+            </div>
+        </div>
+
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% load i18n %}
+{% if message %}
+    <p>{{ user.first_name }} {{ user.last_name }} {% trans 'says this about intelligentRevenue' %}:</p>
+    <br/>
+    <pre>{{ message }}</pre>
+    <br/>
+{% else %}
+    <p>{{ user.first_name }} {{ user.last_name }} %{ trans 'recommended intelligentRevenue to you.' %}</p>
+{% endif %}
+<p>
+{% trans 'Check them out at' %} 
+<a href="{{ dest }}">{{ dest }}</a>
+</p>

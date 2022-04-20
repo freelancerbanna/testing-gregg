@@ -1,0 +1,43 @@
+{% extends 'base_standalone.html' %}
+{% load staticfiles %}
+{% block title %}Sign Up{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script>
+        function clearSessionThenRedirect() {
+            location.href = "{% url 'logout' %}?next={% url 'signup' %}";
+        }
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+            <h2>{% if error %}An error has occured{% else %}Congratulations, your sign-up is
+                complete.{% endif %}</h2>
+
+            {% if already_signed_up %}
+                <div class="alert alert-info" role="alert">
+                    <p>{% include 'icmo_users/includes/awaiting_activation.html' %}</p>
+
+                    <p>
+                        If you think you are seeing this message in error and would like to
+                        try signing up again,
+                        <a href='#' onclick="clearSessionThenRedirect();">click here</a>.
+                    </p>
+
+                </div>
+            {% endif %}
+            {% if error %}
+                <div class="alert alert-danger" role="alert">An error has occured during
+                    signup, please <a href="{% url 'signup' %}">return to the sign up form
+                        and try again.</a>
+                </div>
+            {% else %}
+                Welcome to the intelligentRevenue community. Your account has been charged
+                and you have been emailed a signed agreement. Our Success Team will be in
+                touch within 24 hours to coordinate implementation.
+            {% endif %}
+            <br><br>
+        </div>
+    </div>
+{% endblock %}

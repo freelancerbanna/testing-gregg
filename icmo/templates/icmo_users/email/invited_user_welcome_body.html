@@ -1,0 +1,36 @@
+{% extends 'icmo_users/email/base.html' %}
+{% load static %}
+{% block title %}Welcome to intelligentRevenue{% endblock %}
+{% block subject %}Welcome to intelligentRevenue{% endblock %}
+{% block email_type %}good{% endblock %}
+{% block content %}
+    <tr>
+        <td class="content-block">
+            Welcome! Your account has been activated and you may log in at any time using your
+            email address and the password you chose.
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <h3>Account Information</h3>
+            <table class="alignleft">
+                <tr>
+                    <th>Email</th>
+                    <td>{{ invited_user.email }}</td>
+                </tr>
+                <tr>
+                    <th>Password</th>
+                    <td><i>hidden</i></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <a class='btn-primary'
+               href="https://{{ request.get_host }}{% url 'login' %}">
+                Sign In to My Account
+            </a>
+        </td>
+    </tr>
+{% endblock %}

@@ -1,0 +1,67 @@
+ {% load i18n %}
+ {% load humanize %}
+            <div class="mini row inactive">
+                <div class="eleven columns">
+                  <h4>{{ segment.name }}</h4>
+                </div>
+                <div class="one column icmo-drawer">
+                  <div class="small btn">
+                    <a class="oda-drawer-switch open switch"
+                        gumby-trigger="#segment-{{ segment.id }}">
+                        <i class="fa fa-plus"></i>
+                    </a>
+                    <a class="oda-drawer-switch close switch" 
+                        style="display:none"
+                        gumby-trigger="|#segment-{{ segment.id }}">
+                        <i class="fa fa-minus"></i>
+                    </a>
+                  </div>
+                </div>
+            </div>
+            <div id="segment-{{ segment.id }}" class="segment-info row drawer">
+              <div class="row">
+                <div class="mini oda-dropshadow"></div>
+              </div>
+              {% trans 'Name' %}<br/>
+              <div class="ten columns field">
+                {% if not plan.is_default and plan.access == 'W' %}
+                  <input type="text" name="segment-{{ segment.id }}-name" class="segment-name-update input" 
+                    value="{{ segment.name }}"/>
+                {% else %}
+                  <span>{{ segment.name }}</span>
+                {% endif %}
+              </div>
+
+              {% trans 'Annual Sales Goal' %}<br/>
+              <div class="ten columns field">
+                {% if not plan.is_default and plan.access == 'W' %}
+                  <input type="text" name="segment-{{ segment.id }}-sales_goal" 
+                    class="segment-sales-goal-update input" value="{{ segment.goal }}"/>
+                {% else %}
+                  <span>${% if segment.goal %}{{ segment.goal|intcomma }}{% else %}0{% endif %}</span>
+                {% endif %}
+              </div>
+
+              {% trans 'Average Sale' %}<br/>
+              <div class="ten columns field">
+                {% if not plan.is_default and plan.access == 'W' %}
+                  <input type="text" name="segment-{{ segment.id }}-average_sale"
+                    class="segment-average-sale-update input" value="{{ segment.average_sale }}"/>
+                {% else %}
+                  <span>${{ segment.average_sale }}</span>
+                {% endif %}
+              </div>
+
+                {% if not plan.is_default and plan.access == 'W' %}
+                    <div class="ten columns">
+                        <p class="btn white">
+                            <a href="#" id="delete-segment-{{ segment.id }}"
+                               class="delete-segment-button switch"
+                               gumby-trigger="#delete-segment-modal">
+                                {% trans 'Delete Segment' %}
+                            </a>
+                        </p>
+                    </div>
+                {% endif %}
+
+            </div>

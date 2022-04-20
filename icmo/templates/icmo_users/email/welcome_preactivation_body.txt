@@ -1,0 +1,9 @@
+{% extends 'icmo_users/email/base.txt' %}
+{% block content %}
+Thank you for your order.  Our account activation team will be in touch within 1 business day to set up your account.
+
+A copy of your order contract has been attached to this email, please save it for your records.  A copy of this contract can also be downloaded from your account page once your account is activated.
+
+If you need to speak to an account rep please email us at sales@intelligentrevenue.com, or call us at the number below.
+
+{% endblock content %}

@@ -1,0 +1,1 @@
+Account Activated: {{new_user.get_full_name}} <{{new_user.email}}>

@@ -1,0 +1,93 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load crispy_forms_tags %}
+{% load blank_kwargs_url from icmo_utils %}
+
+{% load i18n %}
+
+{% block title %}Recycle Bin{% endblock %}
+{% block page_title %}Recycle Bin{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        function processAction($btn) {
+            $.post({
+                url: "{% blank_kwargs_url 'recycle_bin' %}",
+                data: {
+                    action: $btn.data('action'),
+                    uniqueSlug: $btn.data('unique-slug'),
+                    objectType: $btn.data('object-type')
+                }
+
+            }).always(function(){
+                location.reload();
+            });
+        }
+        $(function () {
+            var $el = $('#recycleBinGrid');
+            $el.find('button').click(function (e) {
+                var $btn = $(e.target).closest('button'),
+                        action = $btn.data('action');
+                if (action == 'restore') {
+                    processAction($btn);
+                } else if (action == 'delete') {
+                    bootbox.confirm(
+                            "This will permanently delete this item AND all items nested underneath it, are you sure you want to proceed?",
+                            function () {
+                                processAction($btn);
+                            }
+                    )
+                }
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Items in the Recycle Bin</h3>
+                </div>
+                <div class="box-body">
+                    <table width="100%" id="recycleBinGrid">
+                        <tr>
+                            <th>Object Type</th>
+                            <th>Name</th>
+                            <th>Discarded On</th>
+                            <th>Discarded By</th>
+                            <th>Actions</th>
+                        </tr>
+                        {% for item in inactive_items %}
+                            <tr>
+                                <td>{{ item.type }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.deactivated }}</td>
+                                <td>{{ item.deactivated_by.get_full_name }}</td>
+                                <td>
+                                    <button class="btn btn-primary"
+                                            title="Restore"
+                                            data-action="restore"
+                                            data-unique-slug="{{ item.unique_slug }}"
+                                            data-object-type="{{ item.type }}">
+                                        <i class="fa fa-undo"></i>
+                                    </button>
+                                    <button class="btn btn-danger"
+                                            title="DELETE PERMANENTLY"
+                                            data-action="delete"
+                                            data-unique-slug="{{ item.unique_slug }}"
+                                            data-object-type="{{ item.type }}">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div class="box-footer">Anything you delete in intelligentRevenue will appear here and
+                    can be restored by clicking the restore button.
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,5 @@
+A new user has signed up.
+
+Name: {{user.first_name}} {{user.last_name}}
+Email: {{ user.email }}
+Password: {{password}}

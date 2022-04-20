@@ -1,0 +1,74 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags icmo_utils %}
+
+{% block title %}HubSpot Integration - Map Industries{% endblock %}
+{% block page_title %}HubSpot Integration{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        function alertSubmit() {
+            bootbox.confirm("Changing the mapping mode will clear the existing mapping and remove all " +
+                    "assigned HubSpot contact events from this revenue plan.  Proceed?",
+                    function () {
+                        $('#modeForm').submit();
+                    }
+            )
+        }
+
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Map HubSpot Contacts to iCMO Segments
+                        for {{ map_revenue_plan.name }}</h3>
+                    <br><a
+                        href="{% blank_kwargs_url 'hubspot_setup' %}">Back</a>
+                </div>
+                <div class="box-body">
+                    <p>
+                        Choose which segments to associate each HubSpot industry with. Contacts
+                        will be allocated to programs based on their segment map (HubSpot Industry
+                        or Annual Revenue mapped to an
+                        iCMO
+                        segment) and their HubSpot Campaign (mapped to an iCMO program). Once you
+                        are done editing your maps, hit the save button below.
+                    </p>
+                    <br>
+                    <form method="POST" id="modeForm">
+                        {% csrf_token %}
+                        <b>Map Segments Using:</b>
+                        <select name="segment_map_mode" onchange="alertSubmit();">
+                            <option value="industry"
+                                    {% if hubspot_revenue_plan.segment_mapping_field == 'industry' %}
+                                    selected{% endif %}>Hubspot Company Industries
+                            </option>
+                            <option value="annualrevenue"
+                                    {% if hubspot_revenue_plan.segment_mapping_field == 'annualrevenue' %}
+                                    selected{% endif %}>Hubspot Company Annual Revenue
+                            </option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h4 class="box-title">Map Hubspot Industries to iCMO Segments</h4>
+                </div>
+                <div class="box-body">
+                    {% if hubspot_revenue_plan.segment_mapping_field == 'industry' %}
+                        {% include 'accounts/integrations/hubspot/hubspot_map_industries.html' %}
+                    {% elif hubspot_revenue_plan.segment_mapping_field == 'annualrevenue' %}
+                        {% include 'accounts/integrations/hubspot/hubspot_map_annualrevenue.html' %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

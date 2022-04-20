@@ -1,0 +1,44 @@
+{% extends 'base_main.html' %}
+{% block title %}Support & FAQ{% endblock %}
+{% block page_title %}Support & FAQ{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-9 icmo-faq">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">FAQ</h3>
+                </div>
+                <div class="box-body">
+                    {% include 'accounts/help/faq_content.html' %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Support</h3>
+                </div>
+                <div class="box-body">
+                    <p>
+                        <b>Phone Support</b><br>
+                        800-735-6520
+                    </p>
+
+                    <p>
+                        <b>Email Support</b><br>
+                        <a href="mailto:support@intelligentrevenue.com">support@intelligentrevenue.com</a>
+                    </p>
+                    <p><b>Support Hours</b><br>
+                        8:00am to 8:00pm EST, Monday through Friday excluding major holidays.
+                    </p>
+
+                    <p>
+                        <b>intelligentRevenue Accounting Dept</b><br>
+                        13194 US Highway 301 South, Suite 346<br>
+                        Riverview, Florida 33578
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

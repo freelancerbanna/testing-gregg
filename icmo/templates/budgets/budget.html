@@ -1,0 +1,158 @@
+{% extends 'base_app.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize %}
+{% block title %}Budget Management{% endblock %}
+{% block page_title %}Budget Management{% endblock %}
+{% block app_js_libs %}
+    <script src="{% static 'js/trees.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/charts.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/dashboards.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/budgets.js' %}" type="text/javascript"></script>
+{% endblock %}
+{% block app_extra_js %}
+    <script type="text/javascript">
+        $('a[data-toggle="tab"]').on('shown.bs.tab', ICMO.core.refreshCharts);
+        $('div.collapse').on('shown.bs.collapse', ICMO.core.refreshCharts);
+    </script>
+    <script type="text/x-kendo-template" id="budgetEditorTemplate">
+        # if(item_type === 'program' && automatic_distribution){ #
+        <span id='#: plan_field #'>#: plan_value #</span><br>
+        <input type='text' class='k-input k-textbox budget' name='#: actual_field #'/><br>
+        <span id='#: variance_field #'>#: variance_value #</span>
+        # } else if (item_type === 'program' || item_type === 'custom'){ #
+        <input type='text' class='k-input k-textbox budget' name='#: plan_field #'
+               data-bind="value:#: plan_field #"/><br>
+        <input type='text' class='k-input k-textbox budget' name='#: actual_field #'/><br>
+        <span id='#: variance_field #'>#: variance_value #</span>
+        # } #
+    </script>
+    <script type="text/x-kendo-template" id="budgetNameTemplate">
+        <div class="budget_cell">
+            # if(item_type === 'category'){ #
+
+            <span class="budget-category">
+                # if(program){ #
+                <div class="compound-icon">
+                    <i class="fa fa-folder-o"></i>
+                    <i class="fa fa-dot-circle-o"></i>
+                </div>
+                # } else { #
+                <i class="fa fa-folder-o"></i>
+                # } #
+                &nbsp; #: name #</span>
+
+            <div class="subrow">
+                <span class="budget_plan">Plan Summary<br></span>
+                <span class="budget_actual">Actual Summary</span>
+                <span class="budget_variance"><br>Variance Summary</span>
+            </div>
+            # } else if(item_type === 'summary'){ #
+            <span class="budget-category"><i class="fa fa-circle-o"></i> &nbsp; #: name #</span>
+
+            <div class="subrow">
+                <span class="budget_plan">Plan Summary<br></span>
+                <span class="budget_actual">Actual Summary</span>
+                <span class="budget_variance"><br>Variance Summary</span>
+            </div>
+            # } else { #
+            # if(item_type === 'custom'){ #
+            <i class="fa fa-money fa-fw"></i>
+            # } else { #
+            <i class="fa fa-dot-circle-o fa-fw"></i>
+            # } #
+            &nbsp;<b>#: name #</b>
+
+            <div class="subrow">
+                <span class="budget_plan">Plan<br></span>
+                <span class="budget_actual">Actual</span>
+                <span class="budget_variance"><br>Variance</span>
+            </div>
+            # } #
+        </div>
+    </script>
+    <script type="text/x-kendo-template" id="budgetValueTemplate">
+        <div class="budget_value_cell_spacer">&nbsp;</div>
+        <div class="budget_cell budget_value_cell # if(item_type === 'category'){ # category_summary # } #">
+            <span class="budget_value budget_plan">#: kendo.toString(plan__amount, "c") #</span>
+            <span class="budget_value budget_actual">#: kendo.toString(actual__amount, "c") #</span>
+            <span class="budget_value budget_variance # if(variance__amount < 0){ # text-red # } #">#: kendo.toString(variance__amount, "c") #</span>
+        </div>
+    </script>
+    <script type="text/x-kendo-template" id="budgetSummaryFooterTemplate">
+        <div>
+            <span class="budget_value budget_plan">#: plan__amount #</span>
+            <span class="budget_value budget_actual">#: actual__amount #</span>
+            <span class="budget_value budget_variance # if(variance__amount < 0){ # text-red # } #">#: variance__amount #</span>
+        </div>
+    </script>
+{% endblock %}
+{% block app_summary_js %}
+    <script type="text/javascript">
+        $(function () {
+            var summaryGrid = ICMO.apps.budgets.summaryGrid.create($('#grid-summary'));
+            ICMO.apps.budgets.summaryGrid.createPlanPieChart($('#pie-summary-plan'), summaryGrid.dataSource);
+            ICMO.apps.budgets.summaryGrid.createActualPieChart($('#pie-summary-actual'), summaryGrid.dataSource);
+            ICMO.apps.budgets.budgetTrees.initTabs();
+        });
+    </script>
+{% endblock %}
+{% block app_summary_charts %}
+    <div class="row">
+        <div class="col-sm-3 col-sm-offset-2">
+            <div id="pie-summary-plan"></div>
+        </div>
+        <div class="col-sm-3 col-sm-offset-1">
+            <div id="pie-summary-actual"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block app_segment_charts %}
+    <div class="row">
+        <div class="col-sm-3 col-sm-offset-2">
+            <div id="pie-segment-{{ segment.slug }}-plan"></div>
+        </div>
+        <div class="col-sm-3 col-sm-offset-1">
+            <div id="pie-segment-{{ segment.slug }}-actual"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block app_summary_content %}
+    <div id="grid-summary" data-tools="grid-summary-tools"
+         data-api-url="{{ summary_api_url }}?resolution=segment">
+    </div>
+{% endblock %}
+{% block app_segment_tools %}
+    <button class="btn btn-primary btn-bordered btn-sm tree-add grid-add-category"
+            title="Add a new category">
+        <i class="fa fa-plus"></i>&nbsp;
+        Category
+    </button>
+    <button class="btn btn-primary btn-bordered btn-sm tree-add grid-add-custom"
+            title="Add a new custom line item">
+        <i class="fa fa-plus"></i>&nbsp;
+        Line Item
+    </button>
+    <select class='input-sm grid-change-view'
+            name="change_view">
+        <option value="month"
+                {% if grid_view == 'month' %}selected{% endif %}>
+            View: Months
+        </option>
+        <option value="quarter"
+                {% if grid_view == 'quarter' %}selected{% endif %}>
+            View: Quarters
+        </option>
+    </select>
+    <button class="btn btn-primary btn-sm grid-toggle-detail"
+            title="Toggle Detail">
+        <i class="fa fa-list"></i>&nbsp;
+    </button>
+    <button class="btn btn-primary btn-sm grid-expand"
+            title="Expand All">
+        <i class="fa fa-expand"></i>&nbsp;
+    </button>
+    <button class="btn btn-primary btn-sm grid-collapse"
+            title="Collapse All">
+        <i class="fa fa-compress"></i>&nbsp;
+    </button>
+{% endblock %}

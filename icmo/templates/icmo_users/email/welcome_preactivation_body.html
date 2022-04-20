@@ -1,0 +1,26 @@
+{% extends 'icmo_users/email/base.html' %}
+{% block title %}Order confirmed.{% endblock %}
+{% block subject %}Order confirmed.  Awaiting account activation.{% endblock %}
+{% block email_type %}good{% endblock %}
+{% block content %}
+    <tr>
+        <td class="content-block">
+            Thank you for your order. Our account activation team will be in touch within 1
+            business day to set up your account.
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            A copy of your order contract has been attached to this email, please save it for your
+            records. A copy of this contract can also be downloaded from your account page once
+            your account is activated.
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            If you need to speak to an account rep please email us at sales@intelligentrevenue.com, or
+            call us at the number below.
+
+        </td>
+    </tr>
+{% endblock %}

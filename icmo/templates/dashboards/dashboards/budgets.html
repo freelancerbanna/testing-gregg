@@ -1,0 +1,101 @@
+{% load icmo_utils %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Performance Costs</h3>
+            </div>
+            <div class="box-body">
+                <div class="row margin-bottom">
+                    <div class="col-sm-12">
+                        <h4 class="text-center">Annual MQL & SQL Cost: Plan v Actual</h4>
+                        <table width="100%" class="bullet-chart">
+                            <tr>
+                                <td>MQL Cost</td>
+                                <td>
+                                    <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}MqlCostBulletChart"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>SQL Cost</td>
+                                <td>
+                                    <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}SqlCostBulletChart"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Budget</h3>
+            </div>
+            <div class="box-body">
+                <div class="row margin-bottom">
+                    <div class="col-sm-6 col-md-4 col-md-offset-1">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}BudgetTotalChart">
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-md-offset-2">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}BudgetChart"
+                             data-api-url="{% if is_summary %}{{ revenue_plan_period_api_url }}?period_type=month&resolution=revenue_plan{% else %}{{ api_url }}{{ segment.slug }}/periods/?period_type=month&resolution=segment{% endif %}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-sm-6 col-md-4 col-md-offset-1">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}ProgramVsCustomBudgetChart">
+                        </div>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-sm-6 col-md-4 col-md-offset-1">
+                        <h4>Top 5 Over Budget Programs</h4>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Month</th>
+                                <th>Over Budget</th>
+                            </tr>
+                            </thead>
+                            {% for period in segment.top_5_over_budget %}
+                                <tr>
+                                    <td>{% if is_summary %}
+                                        {{ period.segment }} {% endif %}{{ period.program }}</td>
+                                    <td>{{ period.period|full_month}}</td>
+                                    <td>{{ period.budget_variance|whole_money }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-md-offset-2">
+                        <h4>Top 5 Under Budget Programs</h4>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Month</th>
+                                <th>Under Budget</th>
+                            </tr>
+                            </thead>
+                            {% for period in segment.top_5_under_budget %}
+                                <tr>
+                                    <td>{% if is_summary %}
+                                        {{ period.segment }} {% endif %}{{ period.program }}</td>
+                                    <td>{{ period.period|full_month }}</td>
+                                    <td>{{ period.budget_variance|whole_money }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

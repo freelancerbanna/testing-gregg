@@ -1,0 +1,7 @@
+{% extends "registration/registration_base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Signed out" %}{% endblock %}
+{% block content %}
+    <h2>Signed Out</h2>
+    <p>You have been signed out successfully.  <a href="{% url 'login' %}">Sign in again</a>.</p>
+{% endblock %}

@@ -1,0 +1,124 @@
+
+.ht_clone_left{
+    display: none; 
+}
+.handsontableInput{
+    font-size: 12px!important;
+    min-width: 150px!important;    
+}
+.tab-content{
+    float: left;
+}
+.icmo-budget-controls{
+    background-color: #ffffff;
+    display: inline-block;
+    width: 100%;
+    padding: 2px 15px 2px 15px;
+}
+/* text editor stuff */
+
+.icmo-budget-controls{
+    background-color: #ffffff;
+}
+.icmo-budget-controls .button,
+.icmo-budget-controls select,
+.icmo-budget-controls .color_selector{
+    position: relative;
+    float: left;
+    margin-right: 3px;
+    color: #444444;
+}
+
+.icmo-inactive{
+    color: #ccc!important; 
+}
+.color_selector{
+    width: 34px;
+    height: 32px;
+    display: block;
+    padding: 0;
+}
+.color_selector a{
+    line-height: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: 26px!important;
+    color: #444444!important;
+}
+.color_selector i{
+    font-size: 12px;
+    margin: 0!important;
+    padding: 0!important;
+}
+.colorpicker-popup{
+    border: none;
+    width: 30px;
+    height: 4px;
+    line-height: 4;
+
+}
+.ui-colorpicker{
+    position: absolute;
+    z-index: 1000;
+}
+
+.htContainer{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+.icmo-budget-controls .button{
+    padding: 5px;
+    font-size: 15px;
+}
+.icmo-budget-controls .active{
+    background-color: #ccc;
+}
+.icmo-budget-controls select{
+    background-color: #fff;
+    color: #444444;
+    height: 30px;
+    max-width: 228px;
+    margin: 0;
+    border: 0;
+    position: relative;
+    font-weight: bold;
+}
+.icmo-budget-controls .separator{
+    border-left: 1px solid #eee;
+    float: left;
+    width: 5px;
+    height: 30px;
+    margin-right: 8px;
+}
+
+/* these are color formats that are applied to cells */
+.htContainer .icmo-font-bold{
+    font-weight: bold;
+}
+.htContainer .icmo-font-italic{
+    font-style: italic;
+}
+.htContainer .icmo-font-strikethrough{
+    text-decoration: line-through;
+}
+.icmo-font-family-Arial{
+    font-family: Arial, Helvetica, sans-serif;
+}
+.icmo-font-family-Serif{
+    font-family: serif;
+}
+.icmo-font-family-Sans-Serif{
+    font-family: sans-serif;
+}
+.icmo-font-family-Tahoma{
+    font-family: Tahoma, Geneva, sans-serif;
+}
+.icmo-font-family-Verdana{
+    font-family: Verdana, Geneva, sans-serif
+}
+.icmo-font-family-Lucida{
+    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+.icmo-font-family-Courier-New{
+    font-family: "Courier New", Courier, monospace;
+}

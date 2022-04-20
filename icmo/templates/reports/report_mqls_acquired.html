@@ -1,0 +1,105 @@
+{% extends 'reports/base_reports.html' %}
+{% load static %}
+{% block report_title_head %}MQL Acquired{% endblock %}
+{% block report_title_page_title %}MQL Acquired{% endblock %}
+{% block report_title_box_title %}MQL Acquired{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        function createChart(startMonth, endMonth) {
+            ICMO.charts.periodOverTimeChart(
+                    $('#chart'),
+                    {
+                        title: {
+                            text: "Qualified Leads per Month"
+                        },
+                        seriesDefaults: {
+                            type: "line",
+                            style: "smooth"
+                        },
+                        series: [{
+                            field: "mql_plan",
+                            name: "MQL Planned"
+                        }, {
+                            field: "mql_actual",
+                            name: "MQL Actual"
+                        }],
+                        tooltip: {
+                            visible: true,
+                            format: "{0}%",
+                            template: "#= series.name #: #= value #"
+                        }
+                    },
+                    'months',
+                    ICMO.core.getDataSourceByURL('{{ revenue_plan_period_api_url }}?resolution=revenue_plan&period_type=month'),
+                    startMonth,
+                    endMonth
+            );
+        }
+        function createGrid(startMonth, endMonth) {
+            var $el = $("#dataGrid");
+            if ($el.data("kendoGrid")) {
+                $el.data("kendoGrid").destroy();
+                $el.empty();
+            }
+            ICMO.periods.horizontalPeriodGrid.create($el, {
+                        periodType: 'months',
+                        nameField: {field: 'segment_name', title: 'Segment', width: 300},
+                        field: 'mql',
+                        fieldAggregate: 'sum'
+                    },
+                    null, startMonth, endMonth);
+        }
+        (function () {
+            {% if selected_plan.is_current_year %}
+                createChart('{{time_periods_months.0}}', '{{ time_periods_current_month }}');
+                createGrid('{{time_periods_months.0}}', '{{ time_periods_current_month }}');
+            {% else %}
+                createChart('{{time_periods_months.0}}', '{{ time_periods_months.11 }}');
+                createGrid();
+            {% endif %}
+            $('#reportBtn').click(function (e) {
+                var startMonth = $('#dateRangeStart').val(),
+                        endMonth = $('#dateRangeEnd').val();
+                createChart(startMonth, endMonth);
+                createGrid(startMonth, endMonth);
+            });
+
+        }());
+    </script>
+{% endblock %}
+{% block box_body %}
+    <div class="filter well">
+        <div class="form-inline">
+            <div class="form-group">
+                <label for="dateRangeStart">Date Range</label>
+                <select class="form-control" id="dateRangeStart">
+                    {% for month in selected_company.fiscal_months_by_name %}
+                        <option value="{{ month }}">{{ month|title }}</option>
+                    {% endfor %}
+                </select>
+                <select class="form-control" id="dateRangeEnd">
+                    {% for month in selected_company.fiscal_months_by_name %}
+                        <option value="{{ month }}"
+                                {% if selected_plan.is_current_year %}
+                                {% if month == time_periods_current_month %}selected{% endif %}
+                                {% elif forloop.last %}selected{% endif %}>
+                            {{ month|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-bordered btn-primary" id="reportBtn">Run Report</button>
+        </div>
+    </div>
+    <div class="k-content wide">
+        <div id="chart"></div>
+        <hr>
+        <h4>MQL Plan vs Actual Data</h4>
+        <div class='grid-summary-tools' id="grid-summary-tools"></div>
+        <div id="dataGrid"
+             data-tools="grid-summary-tools"
+             data-api-url="{{ revenue_plan_horizontal_period_api_url }}?resolution=segment&period_type=month">
+        </div>
+    </div>
+{% endblock %}

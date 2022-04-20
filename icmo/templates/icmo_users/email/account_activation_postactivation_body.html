@@ -1,0 +1,76 @@
+{% extends 'icmo_users/email/base.html' %}
+{% load static %}
+{% block title %}Account Activated{% endblock %}
+{% block subject %}Account Activated{% endblock %}
+{% block email_type %}good{% endblock %}
+{% block content %}
+    <tr>
+        <td class="content-block">
+            The following account has been activated and may log in at any time.
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <h3>New Account Login Information</h3>
+            <table class="alignleft">
+                <tr>
+                    <th>Email</th>
+                    <td>{{ new_user.email }}</td>
+                </tr>
+                <tr>
+                    <th>Password</th>
+                    <td>{{ password }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <h3>New Account Contact Information</h3>
+            <table class="alignleft">
+                <tr>
+                    <th>Name</th>
+                    <td>{{ new_user.get_full_name }}</td>
+                </tr>
+                <tr>
+                    <th>Title</th>
+                    <td>{{ new_user.title }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ new_user.email }}</td>
+                </tr>
+                <tr>
+                    <th>Phone</th>
+                    <td>{{ new_user.phone_number }}</td>
+                </tr>
+                <tr>
+                    <th>Company</th>
+                    <td>{{ new_user.employer_name }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <h3>New Account Plan Details</h3>
+            <table class="alignleft">
+                <tr>
+                    <th>Plan</th>
+                    <td>{{ subscription.plan.name }}</td>
+                </tr>
+                <tr>
+                    <th>Coupon Code Applied</th>
+                    <td>{{ subscription.coupon.code }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <b>Security Reminder:</b><br>
+            intelligentRevenue recommends that all new users use the password change or reset features to
+            change their passwords after the welcome process is complete.
+        </td>
+    </tr>
+{% endblock %}

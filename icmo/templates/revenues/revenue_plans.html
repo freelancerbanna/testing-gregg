@@ -1,0 +1,374 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize %}
+{% block title %}Revenue Plan Management{% endblock %}
+{% block page_title %}Revenue Plan Management{% endblock %}
+{% block compressed_js %}
+    {{ block.super }}
+    <script src="{% static 'js/revenue_plans.js' %}" type="text/javascript"></script>
+{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    {% include 'misc_widgets/grid_row_tools.html' %}
+    <script type="text/javascript">
+        $(function () {
+            {% if not company_user.group.live_plan_only %}
+                ICMO.apps.revenue.createRevenueGrid($('#grid-published'), '{{ selected_plan.slug }}');
+                ICMO.apps.revenue.createRevenueGrid($('#grid-draft'), '{{ selected_plan.slug }}');
+                ICMO.apps.revenue.createRevenueGrid($('#grid-archived'), '{{ selected_plan.slug }}');
+                ICMO.apps.revenue.initCloneForm($('#clonePlanModal'), 'Plan');
+                ICMO.apps.revenue.initCloneForm($('#cloneSegmentModal'), 'Segment');
+            {% endif %}
+            {% if selected_plan %}
+                ICMO.apps.revenue.createSegmentGrid($('#grid-segments'));
+                ICMO.apps.revenue.chart.init();
+            {% endif %}
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <div class="box-tools pull-right">
+                        <button class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    {% if selected_plan %}
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <h4>Revenue by Target</h4>
+
+                                <div class="chart">
+                                    <div id="chart"></div>
+                                </div>
+                            </div>
+                            <div class="col-sm-8">
+                                <h4>Segments Targeted
+                                    <div class="pull-right grid-segments-tools"
+                                         id="grid-segments-tools">
+                                        <button class="btn btn-primary btn-bordered btn-sm grid-add">
+                                            <i class="fa fa-plus"></i>&nbsp;
+                                            New Segment
+                                        </button>
+                                        <select class='input-sm grid-change-view'
+                                                name="change_view">
+                                            <option value="current"
+                                                    {% if grid_view == 'current' %}selected{% endif %}>
+                                                {{ selected_plan.plan_year }} Goals
+                                            </option>
+                                            <option value="previous"
+                                                    {% if grid_view == 'previous' %}selected{% endif %}>
+                                                {{ selected_plan.plan_year|add:"-1" }} Revenue
+                                            </option>
+                                        </select>
+                                        <button class="btn btn-primary btn-sm grid-cancel"
+                                                title="Cancel changes"
+                                                disabled aria-disabled="true">
+                                            <i class="fa fa-undo"></i>
+                                        </button>
+                                        <div class="btn-group" role="group" aria-label="...">
+                                            <button class="btn btn-primary btn-sm grid-pdf"
+                                                    title="Export to PDF">
+                                                <i class="fa fa-file-pdf-o"></i>
+                                            </button>
+                                            <button class="btn btn-primary btn-sm grid-excel"
+                                                    title="Export to Excel">
+                                                <i class="fa fa-file-excel-o"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </h4>
+                                <div id="grid-segments"
+                                     data-tools="grid-segments-tools"
+                                     class="grid-multiline-headers"
+                                     data-api-url="
+                                             {{ api_url }}{{ selected_plan.slug }}/segments/">
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        {% if has_plans %}
+                            No plan is currently selected.  Select a plan by clicking a name below.
+                        {% else %}
+                            You do not have any plans.  <a href="">Add a new plan</a> to get
+                            started.
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="box-footer box-short-footer">
+                    <table class="table no-border table-condensed small">
+                        <tr>
+                            <td><b>Created</b>&nbsp; {{ selected_plan.created }}</td>
+                            <td><b>Last Updated</b>&nbsp;
+                                {% if selected_plan.modified_by %}
+                                    {{ selected_plan.modified }} by
+                                    {{ modified_by.get_full_name }}
+                                {% endif %}
+                            </td>
+                            <td><b>Owner</b>&nbsp; {% if selected_plan.owner == user %}
+                                You{% else %}
+                                {{ selected_plan.owner }}{% endif %}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if not company_user.group.live_plan_only %}
+        {% include 'revenues/includes/plan_box.html' with plans=published_plans plan_type='published' %}
+        {% include 'revenues/includes/plan_box.html' with plans=draft_plans plan_type='draft' %}
+        {% include 'revenues/includes/plan_box.html' with plans=archived_plans plan_type='archived' %}
+    {% endif %}
+    <div class="modal fade" id="clonePlanModal" tabindex="-1" role="dialog"
+         data-api-url="{{ api_url }}"
+         data-item-slug=""
+         aria-labelledby="clonePlanModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="clonePlanModalLabel">Clone Plan: <span
+                            id="clonePlanTargetName"></span></h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" method="post">
+                        {% csrf_token %}
+
+                        <div id="div_id_name" class="form-group">
+                            <label for="id_name"
+                                   class="control-label col-lg-2 requiredField">
+                                Name<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-8">
+                                <input class="form-control"
+                                       id="id_name" name="name"
+                                       required="required"
+                                       type="text"/>
+                            </div>
+                        </div>
+                        <div id="div_id_year" class="form-group">
+                            <label for="id_year"
+                                   class="control-label col-lg-2 requiredField">
+                                Year<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-8">
+                                <select class="form-control"
+                                        id="id_year" name="year"
+                                        required="required">
+                                    <option>2013</option>
+                                    <option>2014</option>
+                                    <option>2015</option>
+                                    <option>2016</option>
+                                    <option>2017</option>
+                                    <option>2018</option>
+                                    <option>2019</option>
+                                    <option>2020</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="div_id_programs" class="form-group">
+                            <label for="id_programs"
+                                   class="control-label col-lg-2 requiredField">
+                                Programs<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_programs" name="programs"
+                                        checked
+                                        type="checkbox"/>
+                            </div>
+                            <label for="id_budgets"
+                                   class="control-label col-lg-2 requiredField">
+                                Budget Plans<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_budgets" name="budgets"
+                                        checked
+                                        type="checkbox"/>
+                            </div>
+                            <label for="id_budget_actuals"
+                                   class="control-label col-lg-2 requiredField">
+                                Budget Actuals<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_budget_actuals" name="budget_actuals"
+                                        type="checkbox"/>
+                            </div>
+                        </div>
+                        <div id="div_id_performance_actuals" class="form-group">
+                            <label for="id_performance_actuals"
+                                   class="control-label col-lg-2 requiredField">
+                                Performance Actuals (Campaigns)<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_performance_actuals" name="performance_actuals"
+                                        type="checkbox"/>
+                            </div>
+                            <label for="id_tasks"
+                                   class="control-label col-lg-2 requiredField">
+                                Tasks<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_tasks" name="tasks"
+                                        type="checkbox"/>
+                            </div>
+                            <label for="id_task_states"
+                                   class="control-label col-lg-2 requiredField">
+                                Task States<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_task_states" name="task_states"
+                                        type="checkbox"/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default btn-bordered"
+                            data-dismiss="modal">Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-bordered">Clone</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="cloneSegmentModal" tabindex="-1" role="dialog"
+         data-api-url="{{ api_url }}{{ selected_plan.slug }}/segments/"
+         data-item-slug=""
+         aria-labelledby="cloneSegmentModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="cloneSegmentModalLabel">Clone Segment: <span
+                            id="cloneSegmentTargetName"></span></h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" method="post">
+                        {% csrf_token %}
+
+                        <div id="div_id_name" class="form-group">
+                            <label for="id_name"
+                                   class="control-label col-lg-2 requiredField">
+                                New Segment Name<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-8">
+                                <input class="form-control"
+                                       id="id_name" name="name"
+                                       type="text"/>
+                            </div>
+                        </div>
+                        <div id="div_id_target" class="form-group">
+                            <label for="id_target"
+                                   class="control-label col-lg-2 requiredField">
+                                OR Existing Segment<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-8">
+                                <select class="form-control"
+                                        id="id_target" name="target">
+                                    <option value=""></option>
+                                    {% for segment in selected_plan.segments.all %}
+                                        <option value='{{ segment.slug }}'>{{ segment.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div id="div_id_programs" class="form-group">
+                            <label for="id_programs"
+                                   class="control-label col-lg-2 requiredField">
+                                Programs<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_programs" name="programs"
+                                        checked
+                                        type="checkbox"/>
+                            </div>
+                            <label for="id_budgets"
+                                   class="control-label col-lg-2 requiredField">
+                                Budget Plans<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_budgets" name="budgets"
+                                        checked
+                                        type="checkbox"/>
+                            </div>
+                            <label for="id_budget_actuals"
+                                   class="control-label col-lg-2 requiredField">
+                                Budget Actuals<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_budget_actuals" name="budget_actuals"
+                                        type="checkbox"/>
+                            </div>
+                        </div>
+                        <div id="div_id_performance_actuals" class="form-group">
+                            <label for="id_performance_actuals"
+                                   class="control-label col-lg-2 requiredField">
+                                Performance Actuals (Campaigns)<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_performance_actuals" name="performance_actuals"
+                                        type="checkbox"/>
+                            </div>
+                            <label for="id_tasks"
+                                   class="control-label col-lg-2 requiredField">
+                                Tasks<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_tasks" name="tasks"
+                                        type="checkbox"/>
+                            </div>
+                            <label for="id_task_states"
+                                   class="control-label col-lg-2 requiredField">
+                                Task States<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-2">
+                                <input
+                                        id="id_task_states" name="task_states"
+                                        type="checkbox"/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default btn-bordered"
+                            data-dismiss="modal">Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-bordered">Clone</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

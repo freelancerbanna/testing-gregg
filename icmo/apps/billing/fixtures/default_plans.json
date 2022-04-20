@@ -1,0 +1,100 @@
+[
+  {
+    "fields": {
+      "free_trial_period_interval_duration": null,
+      "interval_count": 3,
+      "setup_fee_amount": "2500.00",
+      "currency": "USD",
+      "minimum_duration_in_intervals": null,
+      "is_live": false,
+      "slug": "enterprise-quarterly",
+      "short_description": "This Single Company Solution can serve any size organization that is one business entity.",
+      "setup_fee_name": "",
+      "setup_fee_description": "",
+      "is_active": false,
+      "full_description": "This Single Company Solution can serve any size organization that is one business entity.",
+      "amount_display_interval": 1,
+      "free_trial_period_interval": null,
+      "statement_description": "Enterprise Quarterly",
+      "name": "Enterprise Quarterly",
+      "created": "2015-07-23T16:49:43.131Z",
+      "interval": "month",
+      "modified": "2015-07-27T15:00:15.866Z",
+      "limit_max_companies": 1,
+      "amount": "1500.00"
+    },
+    "model": "billing.subscriptionplan",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "free_trial_period_interval_duration": null,
+      "interval_count": 3,
+      "setup_fee_amount": "2500.00",
+      "currency": "USD",
+      "minimum_duration_in_intervals": null,
+      "is_live": false,
+      "slug": "multi-enterprise-quarterly",
+      "short_description": "A Multi Company Solution will serve any size organization with multiple business units.",
+      "setup_fee_name": "",
+      "setup_fee_description": "",
+      "is_active": false,
+      "full_description": "A Multi Company Solution will serve any size organization with multiple business units.",
+      "amount_display_interval": 1,
+      "free_trial_period_interval": null,
+      "statement_description": "Multi Enterprise Qtly",
+      "name": "Multi Enterprise Quarterly",
+      "created": "2015-07-23T22:02:14.244Z",
+      "interval": "month",
+      "modified": "2015-07-27T15:00:20.359Z",
+      "limit_max_companies": null,
+      "amount": "4500.00"
+    },
+    "model": "billing.subscriptionplan",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "currency": "USD",
+      "code": "FREE12",
+      "percent_off": 100,
+      "created": "2015-07-23T17:04:37.787Z",
+      "times_redeemed": 0,
+      "is_active": false,
+      "modified": "2015-07-31T16:21:54.352Z",
+      "amount_off": null,
+      "duration": "repeating",
+      "is_live": false,
+      "setup_fee_percent_off": null,
+      "max_redemptions": null,
+      "redeem_by": null,
+      "short_description": "12 months free",
+      "setup_fee_amount_off": null,
+      "duration_in_months": 12
+    },
+    "model": "billing.coupon",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "currency": "USD",
+      "code": "10OFFSETUPFREE",
+      "percent_off": 10,
+      "created": "2015-07-23T17:04:37.787Z",
+      "times_redeemed": 0,
+      "is_active": false,
+      "modified": "2015-07-31T16:21:54.352Z",
+      "amount_off": null,
+      "duration": "repeating",
+      "is_live": false,
+      "setup_fee_percent_off": 100,
+      "max_redemptions": null,
+      "redeem_by": null,
+      "short_description": "10% off the first 12 months, setup fee waived",
+      "setup_fee_amount_off": null,
+      "duration_in_months": 12
+    },
+    "model": "billing.coupon",
+    "pk": 2
+  }
+]

@@ -1,0 +1,61 @@
+{% extends 'base_app.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize crispy_forms_tags %}
+{% block title %}Marketing Mix Management{% endblock %}
+{% block page_title %}Marketing Mix Management{% endblock %}
+{% block app_js_libs %}
+    <script src="{% static 'js/trees.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/program_mix.js' %}" type="text/javascript"></script>
+{% endblock %}
+{% block app_extra_js %}
+    <script type="text/x-kendo-template" id="programNameTemplate">
+        # if(item_type === 'category'){ #
+        <span class="program-category"><i class="fa fa-folder-o"></i> &nbsp; #: name #</span>
+        # } else { #
+        <i class="fa fa-dot-circle-o fa-fw"></i>&nbsp;<b>#: name #</b>
+        # } #
+    </script>
+{% endblock %}
+{% block app_summary_js %}
+    <script type="text/javascript">
+        $(function () {
+            //ICMO.core.createWebsocket("{{ api_url }}{{ segment.slug }}/programs/", 'programs');
+            ICMO.apps.leads.summaryGrid.create($('#grid-summary'));
+        });
+    </script>
+{% endblock %}
+{% block app_segment_js %}
+    <script type="text/javascript">
+        $(function () {
+            ICMO.apps.leads.programGrid.initTabs();
+        });
+    </script>
+{% endblock %}
+{% block app_summary_charts %}
+    <div id='funnels-summary'>
+        {% include 'programs/funnels.html' with funnel_data=funnel_data %}
+    </div>
+{% endblock %}
+{% block app_segment_charts %}
+    <div id="funnels-segment-{{ segment.slug }}">
+        {% include 'programs/funnels.html' with funnel_data=segment.funnel_data %}
+    </div>
+{% endblock %}
+{% block app_summary_content %}
+    <div id="grid-summary" data-tools="grid-summary-tools"
+         class="grid-multiline-headers"
+         data-api-url="{{ summary_api_url }}?resolution=segment&period=year">
+    </div>
+{% endblock %}
+{% block app_segment_tools %}
+    <button class="btn btn-primary btn-bordered btn-sm tree-add grid-add-program"
+            title="Add a program">
+        <i class="fa fa-plus"></i>&nbsp;
+        New Program
+    </button>
+    <button class="btn btn-primary btn-bordered btn-sm tree-add grid-add-category"
+            title="Add a Channel">
+        <i class="fa fa-plus"></i>&nbsp;
+        New Channel
+    </button>
+{% endblock %}

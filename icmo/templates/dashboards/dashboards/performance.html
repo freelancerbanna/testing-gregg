@@ -1,0 +1,83 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Performance</h3>
+            </div>
+            <div class="box-body">
+                {% include 'dashboards/includes/funnels.html' with funnel_data=segment.funnel_data %}
+                <div class="row margin-bottom">
+                    <div class="col-sm-12">
+                        <h4 class="text-center">Annual MQL & SQL Cost: Plan v Actual</h4>
+                        <table width="100%" class="bullet-chart">
+                            <tr>
+                                <td>MQL Cost</td>
+                                <td>
+                                    <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}MqlCostBulletChart"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>SQL Cost</td>
+                                <td>
+                                    <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}SqlCostBulletChart"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-sm-6 col-md-4 col-md-offset-1">
+
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}MqlCostBulletChart"></div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-md-offset-2">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}SqlCostBulletChart"></div>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-sm-4 col-sm-offset-1">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}MqlChart"></div>
+                    </div>
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}SqlChart"></div>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-sm-4 col-sm-offset-1">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}SalesChart"></div>
+                    </div>
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}TotalSalesValueChart"></div>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-md-12">
+                        <h4>MQL Plan vs Actual Data</h4>
+
+                        <div id="grid-mql-{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}" data-tools="grid-summary-tools"
+                             data-api-url="{{ segment.summary_api_url }}?resolution={% if is_summary %}segment{% else %}program{% endif %}&period_type=month">
+                        </div>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-md-12">
+                        <h4>SQL Plan vs Actual Data</h4>
+
+                        <div id="grid-sql-{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}" data-tools="grid-summary-tools"
+                             data-api-url="{{ segment.summary_api_url }}?resolution={% if is_summary %}segment{% else %}program{% endif %}&period_type=month">
+                        </div>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-md-12">
+                        <h4>Sales Plan vs Actual Data</h4>
+
+                        <div id="grid-sales-{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}" data-tools="grid-summary-tools"
+                             data-api-url="{{ segment.summary_api_url }}?resolution={% if is_summary %}segment{% else %}program{% endif %}&period_type=month">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

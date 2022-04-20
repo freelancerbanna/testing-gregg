@@ -1,0 +1,170 @@
+{% load static humanize %}
+<div class="row margin-bottom">
+    <div class="col-md-10 col-md-offset-1">
+
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <h4>Lead Generation Funnel</h4>
+            </div>
+            <div class="col-xs-4 text-center">
+                <h4>Lead Management Funnel</h4>
+            </div>
+            <div class="col-xs-4 text-center">
+                <h4>Sales Funnel</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <b>Contacts</b>
+
+                <div class="row">
+                    <div class="col-xs-2 col-xs-offset-3">
+                        <span class="">Plan</span><br>
+                        {{ funnel_data.contacts_plan|intcomma }}
+                    </div>
+                    <div class="col-xs-2">
+                        <span class="">Actual</span><br>
+                        {{ funnel_data.contacts_actual|intcomma }}
+                    </div>
+                    <div class="col-xs-2">
+                        <span class="">Delta</span><br>
+                        {{ funnel_data.contacts_variance|intcomma }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 text-center">
+            </div>
+            <div class="col-xs-4 text-center">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <img src="{% static 'img/funnels.png' %}" class="img img-responsive">
+
+                <div class="funnel-content-wrapper">
+                    <div class="funnel-content-table">
+                        <div class="funnel-content-row">
+                            <div class="row funnel-content-cell">
+                                <div class="col-xs-4 text-center">
+                                    <b>Conversion</b>
+
+                                    <div class="row">
+                                        <div class="col-xs-2 col-xs-offset-3">
+                                            <span class="">Plan</span><br>
+                                            {{ funnel_data.touches_to_mql_conversion_plan|floatformat }}%
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <span class="">Actual</span><br>
+                                            {{ funnel_data.touches_to_mql_conversion_actual|floatformat }}%
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <span class="">Delta</span><br>
+                                            {{ funnel_data.touches_to_mql_conversion_variance|floatformat }}
+                                            pp
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <b>Conversion</b>
+
+                                    <div class="row">
+                                        <div class="col-xs-2 col-xs-offset-3">
+                                            <span class="">Plan</span><br>
+                                            {{ funnel_data.mql_to_sql_conversion_plan|floatformat }}%
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <span class="">Actual</span><br>
+                                            {{ funnel_data.mql_to_sql_conversion_actual|floatformat }}%
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <span class="">Delta</span><br>
+                                            {{ funnel_data.mql_to_sql_conversion_variance|floatformat }}
+                                            pp
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <b>Conversion</b>
+
+                                    <div class="row">
+                                        <div class="col-xs-2 col-xs-offset-3">
+                                            <span class="">Plan</span><br>
+                                            {{ funnel_data.sql_to_sale_conversion_plan|floatformat }}%
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <span class="">Actual</span><br>
+                                            {{ funnel_data.sql_to_sale_conversion_actual|floatformat }}%
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <span class="">Delta</span><br>
+                                            {{ funnel_data.sql_to_sale_conversion_variance|floatformat }}
+                                            pp
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <b>MQLs</b>
+
+                <div class="row">
+                    <div class="col-xs-2 col-xs-offset-3">
+                        <span class="">Plan</span><br>
+                        {{ funnel_data.mql_plan|intcomma }}
+                    </div>
+                    <div class="col-xs-2">
+                        <span class="">Actual</span><br>
+                        {{ funnel_data.mql_actual|intcomma }}
+                    </div>
+                    <div class="col-xs-2">
+                        <span class="">Delta</span><br>
+                        {{ funnel_data.mql_variance|intcomma }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 text-center">
+                <b>SQLs</b>
+
+                <div class="row">
+                    <div class="col-xs-2 col-xs-offset-3">
+                        <span class="">Plan</span><br>
+                        {{ funnel_data.sql_plan|intcomma }}
+                    </div>
+                    <div class="col-xs-2">
+                        <span class="">Actual</span><br>
+                        {{ funnel_data.sql_actual|intcomma }}
+                    </div>
+                    <div class="col-xs-2">
+                        <span class="">Delta</span><br>
+                        {{ funnel_data.sql_variance|intcomma }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 text-center">
+                <b>Sales</b>
+
+                <div class="row">
+                    <div class="col-xs-2 col-xs-offset-3">
+                        <span class="">Plan</span><br>
+                        {{ funnel_data.sales_plan|intcomma }}
+                    </div>
+                    <div class="col-xs-2">
+                        <span class="">Actual</span><br>
+                        {{ funnel_data.sales_actual|intcomma }}
+                    </div>
+                    <div class="col-xs-2">
+                        <span class="">Delta</span><br>
+                        {{ funnel_data.sales_variance|intcomma }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

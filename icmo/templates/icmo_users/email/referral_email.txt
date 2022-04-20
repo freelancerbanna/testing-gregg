@@ -1,0 +1,9 @@
+{% load i18n %}
+{% if message %}
+    {{ user.first_name }} {{ user.last_name }} {% trans 'says this about intelligentRevenue' %}:
+    {{ message }}
+{% else %}
+    {{ user.first_name }} {{ user.last_name }} %){ trans 'recommended intelligentRevenue to you.' %}
+{% endif %}
+{% trans 'Check them out at' %} {{ dest }}
+

@@ -1,0 +1,60 @@
+<div class="row">
+    <div class="col-sm-12">
+        <div class="box grid_container">
+            <div class="box-header with-border">
+                <h3 class="box-title">
+                    <i class="fa fa-{% if plan_type == 'draft' %}edit{% elif plan_type == 'published' %}star{% elif plan_type == 'archived' %}archive{% endif %}"></i>
+                    &nbsp;
+                    {{ plan_type|title }}{% if plan_type == 'draft' %}s{% endif %}
+
+                    <div class="box-tools grid-{{ plan_type }}-tools pull-right" id="grid-{{ plan_type }}-tools">
+                        {% if plan_type == 'draft' %}
+                            <button class="btn btn-primary btn-bordered btn-sm grid-add"
+                                    title="Add a new draft plan">
+                                <i class="fa fa-plus"></i>&nbsp;
+                                New Draft Plan
+                            </button>
+                        {% endif %}
+                        <button class="btn btn-primary btn-sm grid-cancel" title="Cancel changes"
+                                disabled aria-disabled="true">
+                            <i class="fa fa-undo"></i>
+                        </button>
+                        <div class="btn-group" role="group" aria-label="...">
+                            <button class="btn btn-primary btn-sm grid-pdf" title="Export to PDF">
+                                <i class="fa fa-file-pdf-o"></i>
+                            </button>
+                            <button class="btn btn-primary btn-sm grid-excel"
+                                    title="Export to Excel">
+                                <i class="fa fa-file-excel-o"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i></button>
+                    </div>
+                </h3>
+            </div>
+
+            <div id="grid-{{ plan_type }}" class='box-grid box-body'
+                 data-tools="grid-{{ plan_type }}-tools"
+                 data-api-url="{{ api_url }}"
+                 data-read-filter="plan_type={{ plan_type }}">
+            </div>
+            <div class="box-footer">
+                {% if plan_type == 'draft' %}
+                    Draft plans are plans that are still in the planning phase. They are entirely
+                    private (unless you explicitly share them).  Changes to draft plans
+                    will not cause any notifications to be sent out to team resources.
+                {% elif plan_type == 'published' %}
+                    The published plan is the plan that is currently implemented at your company.  All
+                    members of your company
+                    will be able to see the plan, and team resources may be notified
+                    of changes that affect them.
+                {% else %}
+                    Archived plans are plans that you want to freeze for historical or archival
+                    purposes.  The plan can still be viewed, but no further changes will
+                    be allowed.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

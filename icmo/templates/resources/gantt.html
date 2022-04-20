@@ -1,0 +1,1197 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load i18n %}
+{% block title %}Team Schedule{% endblock %}
+{% block page_title %}Team Schedule{% endblock %}
+{% block compressed_css %}
+    {{ block.super }}
+    <link href="{% static "vendor/radiantgantt/Src/Styles/jQuery-ui-themes/smoothness/jquery-ui.css" %}"
+          rel="stylesheet"/>
+    <link href="{% static "vendor/radiantgantt/Src/Styles/radiantq.gantt.default.css" %}"
+          rel="stylesheet"/>
+    <link href="{% static "vendor/radiantgantt/Src/Styles/VW.Grid.css" %}" rel="stylesheet"/>
+{% endblock %}
+{% block page_css %}
+    <style>
+
+        .ui-datepicker {
+            font-size: 11px;
+        }
+
+        .AdornerBaseline-style {
+            height: 21px;
+            -moz-background-size: 100% 100%; /* Firefox 3.6 */
+            background-image: none;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            border: 1px solid black;
+            border-radius: 0;
+            background-color: lavenderBlush;
+            float: left;
+            position: absolute;
+            z-index: 8;
+            opacity: 0.5;
+        }
+
+        .backgroundBaseline-style {
+            height: 7px;
+            background-image: none;
+            -moz-background-size: 100% 100%; /* Firefox 3.6 */
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            border: 1px solid #505050;
+            background-color: #e3cbf2;
+            float: left;
+            position: absolute;
+            border-radius: 5px;
+            z-index: 8;
+            margin-top: 14px !important;
+        }
+
+        div.taskbar-style {
+            height: 10px !important;
+            background-image: url({% static "vendor/radiantgantt/Src/Styles/Images/TaskBar.png" %}) !important;
+            -moz-background-size: 100% 100% !important; /* Firefox 3.6 */
+            -o-background-size: 100% 100% !important;
+            -webkit-background-size: 100% 100% !important;
+            background-size: 100% 100% !important;
+            background-repeat: repeat !important;
+            border: 1px solid #050DFA !important;
+            border-radius: 5px !important;
+            float: left !important;
+            -ms-touch-action: none;
+            position: absolute !important;
+            z-index: 10 !important;
+        }
+
+        div.rq-gc-progressbar {
+            height: 2px !important;
+            z-index: 11 !important;
+            position: absolute !important;
+            border-radius: 7px !important;
+            background-color: black !important;
+            border-color: black !important;
+            -ms-touch-action: none;
+        }
+
+        .btn-default {
+            color: #787878;
+
+            background-color: #fff;
+            border-color: #ccc !important;
+
+        }
+
+        .btn-default:hover {
+            background-color: #8ebc00;
+            color: #fff;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            box-shadow: none;
+        }
+
+        .top-control {
+            max-height: 30px;
+        }
+        section.content {
+            height:80%;
+        }
+    .content-wrapper{
+        height:90vh;
+    }
+
+    </style>
+{% endblock %}
+{% block compressed_js %}
+    {{ block.super }}
+{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script src="{% static "vendor/radiantgantt/Src/Scripts/jquery-ui-1.11.4/jquery-ui.min.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "vendor/radiantgantt/Src/Scripts/jquery.layout-latest.min.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "vendor/radiantgantt/Src/Scripts/Utils/date.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "vendor/radiantgantt/Src/ResourceStrings/en-US.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "vendor/radiantgantt/Src/Scripts/VW.Grid.1.min.js" %}"
+            type='text/javascript'></script>
+    <script src="{% static "vendor/radiantgantt/Src/Scripts/RadiantQ-jQuery.Gantt.5.0.1.min.js" %}"
+            type='text/javascript'></script>
+    <script src="{% static "vendor/radiantgantt/Scripts/ganttPrintDialog.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "vendor/radiantgantt/Scripts/html2canvas.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "vendor/radiantgantt/Scripts/jspdf.debug.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "lodash/dist/lodash.min.js" %}" type="text/javascript"></script>
+    <script type="text/javascript">
+        var tasksJsonData = null,
+                resourcesJsonData = null,
+                $ganttChart = null,
+                selectedGantt = null,
+                ganttControl = null,
+                $gantt_container = $('#gantt_container'),
+                $levelStartTime = $("#levelStartTime"),
+                updatedTasks = new RadiantQ.Gantt.Dictionary(),
+                timer = null,
+                columns = [
+                    {
+                        field: "",
+                        title: "Action",
+                        width: 25,
+                        iseditable: false,
+                        template: "<div style='position:absolute;margin-top:-6px'><i style='cursor:pointer;' class='fa fa-cog fa-fw' onclick=showContextMenu(${data.Activity.ID})></i><div class=dropdown id=button${data.Activity.ID} style='display:none;background-color:white;top:0px;position:relative !important;z-index:999999;'><ul class=dropdown-menu style=display:block;position:absolute !important;><li style=cursor:pointer onclick=delete_row()><a>Delete</a></li><li style=cursor:pointer onclick=indent_row()><a>Indent</a></li><li style=cursor:pointer onclick=outdent_row()><a>Outdent</a></li><li style=cursor:pointer onclick=insert_sibling_below()><a>Insert Sibling Below</a></li><li style=cursor:pointer onclick=insert_child_below()><a>Insert Child Below</a></li><li style=cursor:pointer onclick=move_up()><a>Move Up</a></li><li style=cursor:pointer onclick=move_down()><a >Move Down</a></li></ul></div></div>"
+                    },
+                    {
+                        field: "Activity_M().ID_M()",
+                        title: "ID",
+                        width: 25,
+                        iseditable: false
+                    },
+                    {
+                        field: "Activity_M().ActivityName_M()",
+                        title: "Activity Name",
+                        width: 150,
+                        editor: RadiantQ.Default.Template.ProjectGanttExpandableTextboxEditor(),
+                        template: RadiantQ.Default.Template.ProjectGanttExpandableTextBlockTemplate()
+                    },
+                    {
+                        field: "Activity_M().StartTime_M()",
+                        title: "StartTime",
+                        width: 150,
+                        format: "MM/dd/yy hh:mm tt",
+                        editor: "<input data-bind='ActivityTimeBinder:Activity_M().StartTime_M' />"
+                    },
+                    {
+                        field: "Activity_M().EndTime_M()",
+                        title: "EndTime",
+                        width: 150,
+                        format: "MM/dd/yy hh:mm tt",
+                        editor: "<input data-bind='value:Activity_M().EndTime_M' data-getvalueName='getDate' data-setvaluename='setDate'  data-valueUpdate='onBlur'  data-role=\"DateTimePicker\"  />"
+                    },
+                    {
+                        field: "Activity_M().Effort_M()",
+                        title: "Effort",
+                        width: 100,
+                        template: '<div> ${ data.Activity_M().CumulativeEffort_M().toString() } </div>',
+                        editor: "<input data-bind='value:Activity_M().Effort_M'  data-role=\"DurationPicker\"  />"
+                    },
+                    {
+                        field: "Activity_M().ProgressPercent_M()",
+                        title: "ProgressPercent",
+                        width: 125,
+                        editor: "<input data-bind='value:Activity_M().ProgressPercent_M' data-role=\"spinner\" data-options='{\"min\":0, \"max\": 100}' />"
+                    },
+                    {
+                        field: "Activity_M().Assignments_M()",
+                        title: "Resource",
+                        template: '<div> ${ RadiantQ.Gantt.ValueConverters.ConverterUtils.GetResourcesText(data.Activity_M().Assignments_M(), false) } </div>',
+                        editor: "<input data-bind='ResourcePickerBinder:Activity_M().Assignments_M'  />",
+                        width: 100
+                    },
+                    {
+                        field: "Activity_M().PredecessorIndexString_M()",
+                        title: "PredecessorIndex",
+                        isParentEditable: false,
+                        template: "<div>${data.PredecessorIndexString_M() || '' }</div>",
+                        editor: "<input data-bind='value:Activity_M().PredecessorIndexString_M'/>",
+                        width: 130
+                    }],
+
+                //for flexxy ----
+                columns1 = [
+                    {
+                        field: "Name",
+                        title: "Name",
+                        iseditable: false,
+                        editor: RadiantQ.Default.Template.FlexyGanttExpandableTextBoxEditor("nameConverter"),
+                        template: RadiantQ.Default.Template.FlexyGanttExpandableTextBlockTemplate("nameConverter")
+                    }],
+                dt = Date.today(),
+                CriticalPathActivities = [],
+                taskbarLoaded = function (data) {
+                    //alert(data);
+                    var element = data.taskBarackgroundElement || data.taskBarAdornerElement;
+                    $(element).tooltip({
+                        content: function (val) {
+                            var toolTipDateformat = 'dd-MMM-yyyy';
+                            var ds = data.ActivityView.Activity_M().DataSource_M();
+                            var PStartTime = ds.PlannedStartTime.toString(toolTipDateformat);
+                            var PEndTime = ds.PlannedEndTime.toString(toolTipDateformat);
+                            return "<div align='center'><span style='font-weight:bold'>BaseLine</span></div><div><span style='font-weight:bold'>Start:</span> " + PStartTime + "</div><div><span style='font-weight:bold'>End:</span> " + PEndTime + "</div>";
+                        }
+                    });
+                },
+                anchorTime = new Date(),
+                taskbarTemplate = "<div class='rq-gc-taskbar' style='background-image:${updateBackgroundColorBinding(data)} !important; border-color:${ updateBorderColorBinding(data)} !important'><div id='GanttTaskBarLabel' class='rq-gc-taskbar-label'></div></div>",
+
+                isReady = function () {
+                    if (tasksJsonData !== null && resourcesJsonData !== null) {
+                        $.holdReady(false)
+                        hideSavingSpinner();
+                    }
+                },
+
+                parseResourcesJsonData = function (resourcesJsonData) {
+                    return $.map(resourcesJsonData, function (resource) {
+                        return {ResourceID: resource.email, ResourceName: resource.full_name};
+                    });
+                },
+                setupScrollSync = function (elements) {
+                    elements.scroll(function () {
+                        var left = $(this).scrollLeft();
+                        var top = $(this).scrollTop();
+                        elements.each(function () {
+                            if ($(this).scrollLeft() != left)
+                                $(this).scrollLeft(left);
+                        });
+                    });
+                },
+                setupResizeSync = function (elements) {
+                    elements.on("layout.onresize", function () {
+                        var size = $(this).data("layout").state.west.size;
+                        var isClosed = $(this).data("layout").state.west.isClosed;
+                        elements.each(function () {
+                            if ($(this).data("layout").state.west.size != size)
+                                $(this).data("layout").sizePane("west", size);
+
+                            if ($(this).data("layout").state.west.isClosed != isClosed)
+                                $(this).data("layout").toggle('west');
+                        });
+                    });
+                },
+                // SetViewHeight will be called by a containing sample browser, if any.
+                SetViewHeight = function (height) {
+                    if ($gantt_container && $gantt_container.data("GanttControl")) {
+                        $gantt_container.data("GanttControl").setHeight(height);
+                        $("#pagecontent").height(height);
+                    }
+                },
+                CustomScheduleForRes2 = function (date) {
+                    // You can choose to take into account holidays here.
+                    // For better performance cache the intervals for dates instead of creating a new collection every time.
+                    if ((date.getDayName() != "Saturday") && (date.getDayName() != "Sunday") && (date.getDayName() != "Friday")) {
+                        var intervals = new RadiantQ.Gantt.TimePeriodCollection();
+                        intervals.Add(new RadiantQ.Gantt.TimePeriod(date.clone().addHours(8.0), null, new RQTimeSpan(0, 8, 0, 0, 0)));
+                        return intervals;
+                    }
+                    return null;
+                },
+                resetStartDate = function () {
+                    var activityViews = ganttControl.ActivityViews;
+                    for (var i = 0; i < activityViews.length; i++) {
+                        var activity = activityViews[i].Activity_M();
+                        activity.StartTime_M(dt);
+                    }
+                },
+                completedTasksFilter = function (activity) {
+                    return activity.ProgressPercent_M() == 100
+                },
+                incompleteTasksFilter = function (activity) {
+                    return activity.ProgressPercent_M() != 100
+                },
+                nameFilter = function (activity) {
+                    var activityName = activity.ActivityName_M();
+                    var text = $("#nameField").val();
+                    return activityName.toLowerCase().indexOf(text.toLowerCase()) >= 0
+                },
+                afterCanvasGeneratedCallBack = function (canvas, imageData) {
+                    var imgData = canvas.toDataURL(
+                            'image/png');
+                    var doc = new jsPDF('p', 'pt', [canvas.width, canvas.height]);
+                    doc.addImage(imgData, 'png', 0, 0, canvas.width, canvas.height);
+                    doc.save('Gantt.pdf');
+
+                    return false;
+                },
+                getNewTask = function () {
+                    return {
+                        "Name": "New Task ",
+                        "ID": ganttControl.Model.GetNewID(),
+                        "StartTime": new Date(),
+                        "Effort": new RQTimeSpan(0, 8, 0, 0, 0),
+                        "ProgressPercent": 0,
+                        "Description": "Description of Task"
+                    };
+                },
+                afterCanvasGeneratedCallBack4 = function (canvas, imageData) {
+                    var imgData = canvas.toDataURL(
+                            'image/png');
+                    var doc = new jsPDF('p', 'pt', [canvas.width, canvas.height]);
+                    doc.addImage(imgData, 'png', 0, 0, canvas.width, canvas.height);
+                    doc.save('Gantt.pdf');
+
+                    return false;
+                },
+
+                getTaskbarHeight = function (load) {
+                    if (load > 150)
+                        load = 150;
+                    return 40.0 * load / 100.0;
+                },
+
+                TaskInfo = function (id, name, startTime, effort) {
+                    this.ID = id;
+                    this.Name = name;
+                    this.StartTime = startTime;
+                    this.Effort = effort;
+                    this.ProgressPercent = 0;
+                    this.Resources = "";
+                    this.PredecessorIndices = "";
+                    this.IndentLevel = null;
+                },
+                // to get the name from the bounded list
+                nameConverter = function (flexyNodeData, value) {
+                    var data;
+                    // The grid calls this converter with flexyNodeData as a arg.
+                    if (flexyNodeData.Data)
+                        data = flexyNodeData.Data();
+                    // The grid calls this converter with flexyNodeData as a datacontext.
+                    else
+                        data = flexyNodeData;
+                    if (value == undefined) {
+                        if (data.Resource.ResourceName_M != undefined)
+                            return data.Resource.ResourceName_M();
+                        else
+                            return data["ActivityName"];
+                    }
+                    else {
+                        if (data.Resource.ResourceName_M != undefined)
+                            data.Resource.ResourceName_M(value);
+                        else
+                            data["ActivityName"] = value;
+                    }
+                },
+                toolTipDateformat = Date.CultureInfo.formatPatterns.shortDate + '  ' + "HH:mm:ss",
+                startTimeTooltipConverter = function (data) {
+                    if (data["PStartTime"])
+                        return data["PStartTime"].toString(toolTipDateformat);
+                    else if (data["StartTime"])
+                        return data["StartTime"].toString(toolTipDateformat);
+
+                    return null;
+                },
+                endTimeTooltipConverter = function (data) {
+                    if (data["PEndTime"])
+                        return data["PEndTime"].toString(toolTipDateformat);
+                    else if (data["EndTime"])
+                        return data["EndTime"].toString(toolTipDateformat);
+
+                    return null;
+                },
+                updateCriticalPaths = function () {
+                    var ganttControl = $gantt_container.data("GanttControl");
+                    // The first argument to GetCriticalPathActivities is a time-buffer which speifies the "safe distance"
+                    // that an activity's end time should be away from affecting the project deadline.
+                    CriticalPathActivities = ganttControl.GetCriticalPathActivities(RQTimeSpan.Zero_M());
+                    ganttControl.RedrawChartRows();
+                },
+                clearCriticalPaths = function (sender, e) {
+                    var ganttControl = $gantt_container.data("GanttControl");
+                    CriticalPathActivities = [];
+                    ganttControl.RedrawChartRows();
+                },
+                updateBackgroundColorBinding = function (data) {
+                    var isCritical = CriticalPathActivities.indexOf(data) != -1;
+                    // for background-image
+                    if (isCritical)
+                        return 'url(Images/redBar.png)';
+                    //return 'url(Src/Styles/Images/TaskBar.png)';
+                },
+                updateBorderColorBinding = function (data) {
+                    var isCritical = CriticalPathActivities.indexOf(data) != -1;
+                    // for background-color
+                    if (isCritical)
+                        return 'red';
+                    return '#050DFA';
+                },
+
+                //script for context menu
+                delete_row = function () {
+                    var ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+                    //alert('hello');
+                    var activity = ganttControl.SelectedActivity;
+                    if (activity) {
+                        if (activity.ChildActivities.length > 0) {
+                            alert("Children have to be deleted before parent to support Undo.");
+                            return;
+                        }
+                        UpdateRemovedTasks(activity.DataSource_M().ID);
+                        var delAction = new RadiantQ.Gantt.DeleteAction(ganttControl, activity);
+                        ganttControl.ActionManager.RecordAction(delAction);
+                    }
+                    else
+                        alert("Select an activity first, before delete.");
+
+                },
+                indent_row = function () {
+                    var ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+                    var activityview = ganttControl.SelectedItem_M();
+                    if (activityview) {
+                        if (ganttControl.CanIndent(activityview) != true) {
+                            alert("The Activity can not be indented.");
+                            return false;
+                        }
+                        var indentAction = new RadiantQ.Gantt.IndentAction(ganttControl, activityview.Activity_M());
+                        ganttControl.ActionManager.RecordAction(indentAction);
+                    }
+                    else
+                        alert("Please select an item in the table first.");
+                    return false;
+                },
+                outdent_row = function () {
+                    var ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+                    var activityview = ganttControl.SelectedItem_M();
+                    if (activityview) {
+                        if (activityview.activity._indentLevel == 0) {
+                            alert("The Activity can not be outdented.");
+                            return false;
+                        }
+                        var outdentAction = new RadiantQ.Gantt.OutdentAction(ganttControl, activityview.Activity_M());
+                        ganttControl.ActionManager.RecordAction(outdentAction);
+                    }
+                    else
+                        alert("Please select an item in the table first.");
+                    return false;
+                },
+                insert_sibling_below = function () {
+                    var ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+
+                    /*var activity = ganttControl.SelectedActivity;
+                     if (activity)
+                     ganttControl.InsertNewItemAsSiblingBelow(getNewTask(), ganttControl.SelectedIndex_M(), true);
+                     else
+                     alert("Please select an item in the table first.");*/
+
+                    insertCommon(false);
+                },
+                insert_child_below = function () {
+                    var ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+
+                    /*var activity = ganttControl.SelectedActivity;
+                     if (activity)
+                     ganttControl.InsertNewItemAsChildOf(getNewTask(), ganttControl.SelectedIndex_M(), true);
+                     else
+                     alert("Please select an item in the table first.");*/
+                    insertCommon(true);
+                },
+                insertCommon = function (asChild) {
+                    var ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+                    if (ganttControl.SelectedIndex_M() == -1) {
+                        alert("Please select an item in the table first.");
+                        return;
+                    }
+                    var newTask = getNewTask();
+
+                    // This will also add the task to the bound list (if the bound list implements IList).
+                    // If the bound list does not implement IList, then add the CustomTask manually to the bound list.
+                    var insertAsChildAction = new RadiantQ.Gantt.InsertAction(ganttControl, ganttControl.SelectedItem_M(), newTask, asChild);
+                    ganttControl.ActionManager.RecordAction(insertAsChildAction);
+                    UpdateAddedTasks(newTask);
+                },
+                move_up = function () {
+                    var ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+                    var selItem = ganttControl.SelectedItem_M();
+                    if (selItem != null) {
+                        var selIndex = ganttControl.SelectedIndex_M();
+                        if (selIndex > 0) {
+                            var moveUpAction = new RadiantQ.Gantt.MoveSelectedItemsUpAction(ganttControl);
+                            ganttControl.ActionManager.RecordAction(moveUpAction);
+                            ganttControl.SelectedItem = selItem;
+                            var activity = ganttControl.SelectedActivity;
+                            updatedTasks.Add(activity.DataSource_M().ID, activity.DataSource_M());
+                            UpdateModifiedTasks();
+                        }
+                    }
+                    else
+                        alert("Please select an activity first");
+                    return false;
+                },
+                move_down = function () {
+                    var ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+                    var selItem = ganttControl.SelectedItem_M();
+                    if (selItem != null) {
+                        var selIndex = ganttControl.SelectedIndex_M();
+                        if (selIndex >= 0) {
+                            var moveDownAction = new RadiantQ.Gantt.MoveSelectedItemsDownAction(ganttControl);
+                            ganttControl.ActionManager.RecordAction(moveDownAction);
+                            ganttControl.SelectedItem = selItem;
+                            var activity = ganttControl.SelectedActivity;
+                            updatedTasks.Add(activity.DataSource_M().ID, activity.DataSource_M());
+                            UpdateModifiedTasks();
+                        }
+                    }
+                    else
+                        alert("Please select an activity first");
+
+                    return false;
+
+                },
+                /* When the user clicks on the button,
+                 toggle between hiding and showing the dropdown content */
+                showContextMenu = function (id) {
+                    //alert(id);
+                    var prev_id = $("#prev_actionid").val();
+                    //alert(prev_id);
+                    $("#button" + prev_id).hide();
+                    $("#button" + id).toggle();
+                    $("#prev_actionid").val(id);
+                },
+
+                //context menu end
+
+                //--------baseline----
+                widthConverter = function (data) {
+
+                    var ganttChart = data.GanttChart;
+                    var DataSource = data.ActivityView.Activity_M().DataSource_M();
+                    var plannedStart = DataSource.PlannedStartTime;
+                    var plannedEnd = DataSource.PlannedEndTime;
+
+                    // Use this utility in GanttChart to determine the location of the past due bar.
+                    var rightX = plannedEnd ? ganttChart.ConvertTimeToX(plannedEnd) : 0;
+
+                    var leftX = plannedStart ? ganttChart.ConvertTimeToX(plannedStart) : 0;
+
+                    return (rightX - leftX) + "px";
+                },
+                leftConverter = function (data) {
+                    var ganttChart = data.GanttChart;
+                    var plannedStart = data.ActivityView.Activity_M().DataSource_M().PlannedStartTime;
+                    return "1px 0px 1px " + (plannedStart ? ganttChart.ConvertTimeToX(plannedStart) : 0) + "px";
+                },
+                //This will be called only once when many task changed.
+                PropertyChangeNotifier = function (sender, args) {
+                    updatedTasks.Add(sender.ID, sender);
+                    //To update the server using timer, so that it will update the server only once when the task and depended tasks changed
+                    if (timer) {
+                        clearTimeout(timer);
+                    }
+                    timer = setTimeout(function () {
+                        UpdateModifiedTasks();
+                    }.bind(this), 500);
+                },
+
+                UpdateRemovedTasks = function (taskId) {
+                    console.log('Saving removed tasks', taskId);
+                    showSavingSpinner();
+                    $.ajax({
+                        method: 'DELETE',
+                        url: '{{tasks_api_url}}' + taskId + '/',
+                        success: function (data) {
+                            console.log('task deleted successfully');
+                            hideSavingSpinner();
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            alert("Failed to save latest changes, please reload the page and try again.")
+                        }
+                    });
+                    //$.post('/Home/UpdateRemovedTasks',
+                    //    { removedTaskIds: JSON.stringify(removedTaskIds) },
+                    //    function (data) {
+                    //        alert(data);
+                    //    });
+                },
+                UpdateAddedTasks = function (newTask) {
+                    console.log('Saving new task', newTask);
+                    showSavingSpinner();
+                    var translatedTask = translateTaskToJson(newTask);
+                    $.ajax({
+                        method: "POST",
+                        url: '{{tasks_api_url}}',
+                        data: JSON.stringify(translatedTask),
+                        contentType: 'application/json',
+                        success: function (data) {
+                            console.log('task added successfully');
+                            hideSavingSpinner();
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            alert("Failed to save latest changes, please reload the page and try again.")
+                        }
+                    })
+                },
+                UpdateModifiedTasks = function () {
+                    console.log('Saving modified tasks', updatedTasks);
+                    showSavingSpinner();
+                    $.each(updatedTasks.asArray, function (idx, task) {
+                        var translatedTask = translateTaskToJson(task);
+                        $.ajax({
+                            method: "PATCH",
+                            url: '{{tasks_api_url}}' + task.ID + '/',
+                            data: JSON.stringify(translatedTask),
+                            contentType: 'application/json',
+                            success: function (data) {
+                                console.log('task updated successfully');
+                                hideSavingSpinner();
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                alert("Failed to save latest changes, please reload the page and try again.")
+                            }
+                        })
+                    });
+                    //                $.post('/Home/UpdateModifiedTasks',
+                    //                    { updatedTasks: JSON.stringify(updatedTasks) },
+                    //                    function (data) {
+                    //                        alert(data);
+                    //                    });
+                    updatedTasks = new RadiantQ.Gantt.Dictionary();
+                },
+                taskMap = {
+                    rq_id: 'ID',
+                    rq_name: 'Name',
+                    rq_start_time: 'StartTime',
+                    rq_end_time: 'EndTime',
+                    rq_effort: 'Effort',
+                    rq_sort_order: 'SortOrder',
+                    rq_preferred_start_time: 'PreferredStartTime',
+                    rq_indent_level: 'IndentLevel',
+                    rq_predecessor_indices: 'PredecessorIndices',
+                    rq_progress_percent: 'ProgressPercent',
+                    rq_resources: 'Resources'
+                },
+                parseTasksJsonData = function (tasksJsonData) {
+                    // Sorting the items based on SortOrder.
+                    tasksJsonData = tasksJsonData.sort(function (a, b) {
+                        return a.ID - b.ID
+                    });
+                    output = [];
+                    $.each(tasksJsonData, function (idx, task) {
+                        output.push(_.mapKeys(task, function (value, key) {
+                            return taskMap[key]
+                        }))
+                    });
+                    return output
+                },
+                translateTaskToJson = function (task) {
+                    var reversedTaskMap = _.invert(taskMap);
+                    return _.mapKeys(task, function (value, key) {
+                        if (reversedTaskMap.hasOwnProperty(key)) {
+                            return reversedTaskMap[key]
+                        }
+                    });
+                },
+                dateTimeReviver = function (key, value) {
+                    if ((['rq_start_time', 'rq_end_time', 'rq_preferred_start_time'].indexOf(key) > -1) && value) {
+                        return new Date(value);
+                    }
+                    return value;
+                },
+                showSavingSpinner = function () {
+                    $('#savingSpinner').show();
+                    $('#savingText').show();
+                },
+                hideSavingSpinner = function () {
+                    $('#savingSpinner').hide();
+                    $('#savingText').hide();
+                };
+
+
+        //Tasks
+        $.holdReady(true);
+
+        $.ajax({
+            type: "GET",
+            dataType: 'json',
+            url: '{{tasks_api_url}}',
+            converters: {
+                "text json": function (data) {
+                    return JSON.parse(data, dateTimeReviver);
+                }
+            },
+            success: function (data) {
+                tasksJsonData = data;
+                isReady();
+            }
+        });
+        //Resources
+        $.ajax({
+            type: "GET",
+            dataType: 'json',
+            url: '{{resources_api_url}}',
+            converters: {
+                "text json": function (data) {
+                    return JSON.parse(data, dateTimeReviver);
+                }
+            },
+            success: function (data) {
+                resourcesJsonData = data;
+                isReady();
+            }
+        });
+
+
+        $(document).ready(function () {
+            var tasks = parseTasksJsonData(tasksJsonData);
+            //--------baseline----
+            $levelStartTime.datepicker().datepicker('setDate', anchorTime);
+            $gantt_container.GanttControl({
+                ProjectStartDate: anchorTime,
+                GanttTableOptions: {
+                    columns: columns
+                },
+                AssignedResourcesBinding: new RadiantQ.BindingOptions("Resources"),
+                ResourceItemsSource: parseResourcesJsonData(resourcesJsonData),
+                ResourceIDBinding: new RadiantQ.BindingOptions("ResourceID"),
+                ResourceNameBinding: new RadiantQ.BindingOptions("ResourceName"),
+                TaskBarAdornerTemplate: '<div class="AdornerBaseline-style" style="display:none;width: ${widthConverter(data)}; margin:${leftConverter(data)}" title=""></div>',
+                IDBinding: new RadiantQ.BindingOptions("ID"),
+                NameBinding: new RadiantQ.BindingOptions("Name"),
+                IndentLevelBinding: new RadiantQ.BindingOptions("IndentLevel"),
+                SortOrderBinding: new RadiantQ.BindingOptions("SortOrder"),
+                StartTimeBinding: new RadiantQ.BindingOptions("StartTime"),
+                EffortBinding: new RadiantQ.BindingOptions("Effort"),
+                PredecessorIndicesBinding: new RadiantQ.BindingOptions("PredecessorIndices"),
+                ProgressPercentBinding: new RadiantQ.BindingOptions("ProgressPercent"),
+                DescriptionBinding: new RadiantQ.BindingOptions("Description"),
+                ResourceScheduleBinding: new RadiantQ.BindingOptions("CustomSchedule"),
+                ResizeToFit: true,
+
+                OnTaskBarLoad: taskbarLoaded,
+                CanInsertPropertyChangeTriggeringPropertiesInData: true,
+
+                TablePanelWidth: 500,
+                RoundTimeEditsTo: RadiantQ.Gantt.RoundToOptions.Hour,
+                //DataSource: self.tasksJsonData,
+                DataSource: tasks,
+                TaskItemTemplate: taskbarTemplate,
+                TaskBarBrowseToCueLeftTemplate: "<button></button>",
+                TaskBarBrowseToCueRightTemplate: "<button></button>",
+                UseChartVirtualization: true,
+                GanttChartTemplateApplied: function (sender, args) {
+                    $ganttChart = args.element;
+                    $ganttChart.GanttChart({AnchorTime: anchorTime});
+
+                    //Update the selected gantt.
+                    var $ganttElement = $('.rq-ganttBase');
+                    selectedGantt = $ganttElement.data("GanttControl") || $ganttElement.data("FlexyGantt");
+                }
+            });
+
+            ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+            ganttControl.ActionManager.EnableRecordingActions = true;
+
+            var $chxIncludeCompletingTasks = $("#chxIncludeCompletingTasks");
+            ganttControl = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+
+            // to level the resource.
+            $("#levelResources").click(function () {
+                ganttControl.LevelResources($chxIncludeCompletingTasks.prop("checked") == true, $levelStartTime.datepicker("getDate"));
+            });
+            // to change the start time in datasource's tasks , it will reflect in gantt
+
+            // Ensure gantt chart resizes on page resize
+            $(window).resize(function () {
+                $('#pagecontent').height();
+                ganttControl.UpdateLayout();
+            });
+
+            //var $pagecontent = $("#pagecontent");
+
+            //function (event, ui) {
+            //var test=$("#gantt_container")
+            //	var $ganttElement =$("#gantt_container"); //ui.newPanel.find(".rq-ganttBase");
+            //var $ganttElement = test.find(".rq-ganttBase");
+
+            //var ganttInstance = $ganttElement.data("GanttControl") || $ganttElement.data("FlexyGantt");
+            //Update the selected gantt.
+            //selectedGantt = ganttInstance;
+            //var ganttInstance = $ganttElement.data("GanttControl") || $ganttElement.data("FlexyGantt");
+            //Update the selected gantt.
+            //selectedGantt = ganttInstance;
+            //To refresh the gantt height.
+            //ganttInstance.UpdateLayout();
+            //To scroll the chart to the specified anchor time.
+            //ganttInstance.ScrollToAnchorTime();
+            //}
+
+            /* $("#gantt_container").click(function (event, ui) {
+             alert('it called');
+             var $ganttElement = ui.newPanel.find(".rq-ganttBase");
+             //$ganttElement = $('.rq-ganttBase');
+             var ganttInstance = $ganttElement.data("GanttControl") || $ganttElement.data("FlexyGantt");
+             //Update the selected gantt.
+             selectedGantt = ganttInstance+'test';
+             //To refresh the gantt height.
+             ganttInstance.UpdateLayout();
+             //To scroll the chart to the specified anchor time.
+             ganttInstance.ScrollToAnchorTime();
+
+             });*/
+
+            $("#printToPDF").click(function () {
+                selectedGantt.ExportToImage({AfterCanvasGenerated: afterCanvasGeneratedCallBack});
+            });
+
+
+            $("#nameField").keyup(function () {
+                ganttControl.options.FilterActivites = nameFilter;
+                ganttControl.Filter();
+                /* if($("#baseline").val()!="bl_hide"){
+                 $(".AdornerBaseline-style").hide(); //necessary to use here bcz baseline will show otherwise
+                 }*/
+
+            });
+
+            $("#task_details").change(function () {
+                var value = $(this).val();
+                if (value == "complete") {
+                    ganttControl.options.FilterActivites = completedTasksFilter;
+                    ganttControl.Filter();
+                    if ($("#baseline").val() != "bl_hide") {
+                        $(".AdornerBaseline-style").hide(); //necessary to use here bcz baseline will show otherwise
+                    }
+                } else if (value == "incomplete") {
+                    ganttControl.options.FilterActivites = incompleteTasksFilter;
+                    ganttControl.Filter();
+                    if ($("#baseline").val() != "bl_hide") {
+                        $(".AdornerBaseline-style").hide(); //necessary to use here bcz baseline will show otherwise
+                    }
+                } else if (value == "all") {
+                    ganttControl.ResetFilters();
+                    if ($("#baseline").val() != "bl_hide") {
+                        $(".AdornerBaseline-style").hide(); //necessary to use here bcz baseline will show otherwise
+                    }
+                }
+
+            });
+
+
+            //To add a task.
+            $("#addRow").click(function () {
+                var newTask = getNewTask();
+                var addAction = new RadiantQ.Gantt.AddAction(ganttControl, newTask);
+                ganttControl.ActionManager.RecordAction(addAction);
+                UpdateAddedTasks(newTask);
+            });
+
+
+            $("#undo").click(function (e) {
+                ganttControl.ActionManager.Undo();
+            });
+
+            $("#redo").click(function (e) {
+                ganttControl.ActionManager.Redo();
+            });
+
+            //------
+
+            $("#view").change(function () {
+
+                var value = $(this).val();
+
+                if (value == '1') {
+                    $("#reswind").html("Hide Resources Window");
+                    $("#reswind").val('0');
+                    $("#flexyGantt_container1").show();
+                    document.getElementById("view").selectedIndex = "0";
+                    //setupResizeSync(layout.add(layout1));
+                    //ConfigSync();
+
+                } else if (value == '0') {
+                    $("#reswind").html("Show Resources Window");
+                    $("#reswind").val('1');
+                    $("#flexyGantt_container1").hide();
+                    document.getElementById("view").selectedIndex = "0";
+                    //ConfigSync();
+
+                } else if (value == '3') {
+                    //$("#critical_path").removeAttr("onclick");
+                    updateCriticalPaths();
+
+                    //alert('after update critical');
+                    if ($("#baseline").val() == "bl_show") {
+                        $(".AdornerBaseline-style").show(); //necessary to use here bcz baseline will hide otherwise
+                    }
+                    //$("#critical_path").attr("onclick","updateCriticalPaths()");
+                    $("#critical_path").html("Hide Critical Path");
+                    $("#critical_path").val('4');
+
+                    document.getElementById("view").selectedIndex = "0";
+                }
+                else if (value == '4') {
+                    $("#critical_path").removeAttr("onclick");
+                    clearCriticalPaths();
+                    if ($("#baseline").val() == "bl_show") {
+                        $(".AdornerBaseline-style").show(); //necessary to use here bcz baseline will hide otherwise
+                    }
+                    //$("#critical_path").attr("onclick","clearCriticalPaths()");
+                    $("#critical_path").html("Show Critical Path");
+                    $("#critical_path").val('3');
+                    document.getElementById("view").selectedIndex = "0";
+                }
+                else if (value == 'bl_show') {
+                    $(".AdornerBaseline-style").hide();
+                    $("#baseline").val('bl_hide');
+                    $("#baseline").html("Show Baseline");
+                    document.getElementById("view").selectedIndex = "0";
+                } else if (value == 'bl_hide') {
+                    $(".AdornerBaseline-style").show();
+                    $("#baseline").val('bl_show');
+                    $("#baseline").html("Hide Baseline");
+                    document.getElementById("view").selectedIndex = "0";
+                }
+
+            });
+
+            $(".AdornerBaseline-style").hide();
+            $("#flexyGantt_container1").hide();
+
+
+            //second gantt chart for resource----------------------------------------------------------------
+            var model = ganttControl.Model;
+            var _loadTracker = new RadiantQ.Gantt.Model.ResourceLoadTracker(model, null);
+
+            //<--- second gantt start->
+            var $ganttChart1;
+            // The template that defines the look for the task bars. "rq-gc-taskbar" is a built-in style that defines a default look for the task bars.
+            var tTemplate = "<div class='taskBar' data-bind='TaskColor: LoadPerc'></div>";
+            $flexyGantt_container1 = $('#flexyGantt_container1');
+            $flexyGantt_container1.FlexyGantt({
+                //the FlexyGantt is bound to  resolve the hierarchy of Team/Resources/Tasks.
+                resolverFunction: function (data) {
+                    return null;
+                },
+                GanttChartTemplateApplied: function (sender, args) {
+                    $ganttChart1 = args.element;
+                    $ganttChart1.GanttChart({AnchorTime: anchorTime});
+
+                },
+                GanttTableOptions: {
+                    columns: columns1,
+                },
+                TaskStartTimeProperty: "TimePeriod.Start",
+                TaskTooltipTemplate: $("#TaskTooltipTemplate").html(),
+                TaskItemTemplate: tTemplate,
+                RowHeight: 70,
+                TablePanelWidth: 500,
+                TaskEndTimeProperty: "TimePeriod.End",
+                TasksListProperty: "LoadInfos",
+                ResizeToFit: true
+            });
+
+            $flexyGantt_container1.FlexyGantt({DataSource: _loadTracker.ResourceLoadLists_M().asArray});
+            flexyGantt = ($flexyGantt_container1.data("FlexyGantt") || $flexyGantt_container1.data("radiantqFlexyGantt"));
+
+            var ganttChart = $ganttChart.data("GanttChart");
+            var ganttChart1 = $ganttChart1.data("GanttChart") || $ganttChart1.data("radiantqGanttChart");
+            $ganttChart1.bind("ganttchartanchortimechanged", function () {
+                if (!ganttChart1.options.AnchorTime.equals(ganttChart.options.AnchorTime)) {
+                    $ganttChart.GanttChart({
+                        AnchorTime: ganttChart1.options.AnchorTime
+                    });
+                }
+            });
+            //To listen the  gantt_container AnchorTime changes,to update the flexyGantt_container1
+            $ganttChart.bind("ganttchartanchortimechanged", function () {
+                if (!ganttChart1.options.AnchorTime.equals(ganttChart.options.AnchorTime)) {
+                    $ganttChart1.GanttChart({
+                        AnchorTime: ganttChart.options.AnchorTime
+                    });
+                }
+            });
+            //To listen the  flexyGantt_container1 BaseTimeUnitWidth changes,to update the gantt_container
+            $flexyGantt_container1.bind("flexyganttzoomed", function () {
+                if (flexyGantt.options.BaseTimeUnitWidth != ganttControl.options.BaseTimeUnitWidth) {
+                    $gantt_container.GanttControl({
+                        BaseTimeUnitWidth: flexyGantt.options.BaseTimeUnitWidth
+                    });
+                }
+            });
+            //To listen the  gantt_container BaseTimeUnitWidth changes,to update the flexyGantt_container1
+            $gantt_container.bind("ganttcontrolzoomed", function () {
+                if (flexyGantt.options.BaseTimeUnitWidth != ganttControl.options.BaseTimeUnitWidth) {
+                    $flexyGantt_container1.FlexyGantt({
+                        BaseTimeUnitWidth: ganttControl.options.BaseTimeUnitWidth
+                    });
+                }
+            });
+            var ganttChart_Scrollviewer = ganttChart.GetScrollableElement();
+            var ganttChart1_Scrollviewer = ganttChart1.GetScrollableElement();
+            // to sync the two ganttcharts horizontal scroll
+            setupScrollSync(ganttChart_Scrollviewer.add(ganttChart1_Scrollviewer));
+            var layout = ganttControl.GetLayoutElement();
+            var layout1 = flexyGantt.GetLayoutElement();
+            // to sync the splitter.
+            setupResizeSync(layout.add(layout1));
+
+
+            RadiantQ.Binder.TaskColor = function ($elem, role, value, data) {
+                this.element = $elem;
+                this.value = value;
+                this.data = data;
+
+                this.init = function () {
+                    var load = this.data.LoadPerc;
+                    var taskbarHeight = getTaskbarHeight(this.data.LoadPerc);
+                    this.element.css('margin-top', (70 - taskbarHeight) + "px");
+                    this.element.css("height", taskbarHeight + "px");
+                    if (load > 100) {
+                        this.element.css('background-color', 'rgb(217, 150, 148)');
+                    }
+                    else {
+                        this.element.css('background-color', 'rgb(149, 179, 215)');
+                    }
+                };
+                this.refresh = function () {
+                    this.init();
+                }
+            };
+
+
+            //export to pdf
+            $("#printToPDF4").click(function () {
+
+                //alert('helolo');
+                //$ganttElement.data("GanttControl") || $ganttElement.data("FlexyGantt");
+                //var $ganttElement = $("#gantt_container").find(".rq-ganttBase");
+                //var ganttInstance = $ganttElement.data("GanttControl") || $ganttElement.data("FlexyGantt");
+                //Update the selected gantt.
+                //$gantt_container = $("#gantt_container");
+                //selectedGantt = $gantt_container.data("GanttControl");
+
+                //selectedGantt = ganttInstance;
+                // selectedGantt = $gantt_container.data("GanttControl") || $gantt_container.data("radiantqGanttControl");
+                selectedGantt.ExportToImage({AfterCanvasGenerated: afterCanvasGeneratedCallBack});
+            });
+
+            $(document).click(function (event) {
+                if (event.target.nodeName == 'I') {
+                    //alert('fsfsf');
+                }
+                else {
+                    $(".dropdown").hide();
+                }
+
+            });
+
+            //Bind to db
+            var activityViews = ganttControl.ActivityViews;
+            for (var i = 0; i < activityViews.length; i++) {
+                var view = activityViews[i];
+                var activity = ganttControl.ActivityViews[i].activity;
+
+                var task = activity.DataSource_M();
+                //To listen the task changes.
+                task.PropertyChanged.subscribe(PropertyChangeNotifier);
+            }
+            //To listen the task collection changes.
+            activityViews.CollectionChanged.subscribe(function (event, ui) {
+                var task = ui.items[0].Activity_M().DataSource_M();
+                if (event.type === "insert") {
+                    task.PropertyChanged.subscribe(PropertyChangeNotifier);
+                }
+                else {
+                    task.PropertyChanged.unsubscribe(PropertyChangeNotifier);
+                }
+            });
+
+
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row" style="height:100%">
+        <div class="col-sm-12" style="height:100%">
+            <div class="box" id="ganttcontainer" style="height:100%">
+                <div id="pagecontent" style="height: 100%;min-height:400px;">
+
+                    <div style="padding-top:20px; padding-left:28px;">
+
+                        <button type="button" class="btn btn-default" id="addRow"><i
+                                class="fa fa-plus">&nbsp;</i>Add Task
+                        </button>
+                        <button type="button" class="btn btn-default top-control" id="undo">Undo
+                        </button>
+
+                        <button type="button" class="btn btn-default top-control" id="redo">Redo
+                        </button>
+
+                        <!--<form action="" method="get" style="float:right;padding-right:10px;">
+                            <button type="submit" class="btn btn-default" style="float:right;" name="anch" value="" id="reset">Today</button>
+                        </form>-->
+
+                        <!--Task Name to Filter:
+                        <input id="nameField" style="min-height: 20px;margin-top:2px" type="text" />
+                        <button class="btn btn-default" id="Filter" type="button"  >Filter</button>
+                        <button class="btn btn-default" id="ResetFilters" type="button"  >Reset Filter</button>
+                        -->
+                        <div class="input-group" style="display:inline-block;">
+
+                            <input type="text" class="form-control1 top-control" id="nameField"
+                                   placeholder="Search for task name...">
+                            <!--<span class="input-group-btn ">
+                              <button class="btn btn-default" id="Filter" type="button">Go!</button>
+                            </span>-->
+
+                        </div>
+                        <!--<input type="checkbox" checked="checked" id='chxIncludeCompletingTasks' />-->
+                        <input type="hidden" id='levelStartTime'/>
+                        <!--<button class="btn btn-default" id="ResetFilters" type="button"  >Delete</button>	-->
+                        <!--<button class="btn btn-default" id="levelResources" type="button"  >Level Resources</button>-->
+
+                        <select id="task_details" class="top-control"
+                                style="padding: 6.5px;border: 1px solid #ccc;">
+                            <option value="all">Show All</option>
+                            <option value="incomplete">Show Uncompleted</option>
+                            <option value="complete" id="CompletedTasks">Show Completed</option>
+                        </select>
+
+                        <select id="view" class="top-control"
+                                style="padding: 6.5px;border: 1px solid #ccc;">
+                            <option value="2">---Select View---</option>
+                            <option value="3" id="critical_path">Show Critical Path</option>
+                            <!--<option value="2" onclick="clearCriticalPaths()">Clear Critical Path</option>-->
+                            <option id="reswind" value="1">Show Resources Window</option>
+                            <option id="baseline" value="bl_hide">Show Baseline</option>
+                        </select>
+                        <!--<div style="width:50px; align:center;display:inline-block;float:right;padding:10px;"class="top-control" >
+                            <i id="printToPDF" style="cursor:pointer;float: right;" class="fa fa-file-pdf-o"></i>
+                        </div>-->
+                        <!--<i id="zoom" class="fa fa-search-plus" style="cursor:pointer;"></i>
+                        <i class="fa fa-search-minus"></i>-->
+                        <i id="savingSpinner"
+                           class="fa fa-fw fa-refresh fa-spin"></i>
+                        &nbsp; <span id="savingText">Syncing, please wait...</span>
+                    </div>
+
+                    <!-- Div that will be transformed into the gantt widget above.-->
+                    <div id="gantt_container" style="height: 65%; width: 100%;"></div>
+
+                    <div id="flexyGantt_container1" style="height: 35%;"></div>
+                    <input type='hidden' id='prev_actionid' value=''/>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

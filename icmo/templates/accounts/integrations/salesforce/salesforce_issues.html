@@ -1,0 +1,64 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags icmo_utils humanize %}
+
+{% block title %}Salesforce Integration - Issues{% endblock %}
+{% block page_title %}Salesforce Integration{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Salesforce Data Issues for {{ issues_plan.name }}</h3>
+                    <br><a
+                        href="{% blank_kwargs_url 'sfdc_manage' %}">Back</a>
+                </div>
+                <div class="box-body">
+                    <p>
+                        These issues in your Salesforce Data may cause discrepancies between your
+                        Salesforce reports and
+                        your iCMO reports. They will either need to be resolved in Salesforce and
+                        then re-synced, or ignored.
+                    </p>
+                    <hr>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Level</th>
+                            <th>Message</th>
+                            <th>Associated Lead</th>
+                            <th>Associated Opportunity</th>
+                            <th>Associated Account</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for issue in issues %}
+                            <tr>
+                                <td>{{ issue.get_level_display }}</td>
+                                <td>{{ issue.message }}</td>
+                                <td>
+                                    {% if issue.salesforce_lead %}
+                                        <a href="{{ sfc.salesforce_url }}{{ issue.salesforce_lead.sfdc_id }}"
+                                           target="_blank">{{ issue.salesforce_lead.sfdc_name }}</a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if issue.salesforce_opportunity %}
+                                        <a href="{{ sfc.salesforce_url }}{{ issue.salesforce_opportunity.sfdc_id }}"
+                                           target="_blank">{{ issue.salesforce_opportunity.sfdc_name }}</a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if issue.salesforce_account %}
+                                        <a href="{{ sfc.salesforce_url }}{{ issue.salesforce_account.sfdc_id }}"
+                                           target="_blank">{{ issue.salesforce_account.sfdc_name }}</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

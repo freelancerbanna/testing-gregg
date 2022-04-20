@@ -1,0 +1,153 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags icmo_utils humanize %}
+
+{% block title %}Salesforce Integration - Breakdown{% endblock %}
+{% block page_title %}Salesforce Integration{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="application/javascript">
+        $(function () {
+            $('#hide-empty').click(function () {
+                $('tr.no-data').toggle();
+            });
+            $('#hide-mapped').click(function () {
+                $('tr.mapped').toggle();
+            });
+            $('#hide-unmapped').click(function () {
+                $('tr.unmapped').toggle();
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Breakdown for {{ breakdown_plan.name }}</h3>
+                    <br><a
+                        href="{% blank_kwargs_url 'sfdc_manage' %}">Back</a>
+                </div>
+                <div class="box-body">
+                    <p>
+                        An overview of how we are deriving iCMO metrics for this revenue plan.
+                    </p>
+                    <hr>
+                    <h4>MQLs</h4>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Name</th>
+                            <th>Explanation</th>
+                            <th>Your setting</th>
+                            <th>MQLs Added/Removed</th>
+                            <th>Total MQLs</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Start</td>
+                            <td>
+                                Count every non-deleted Salesforce Lead where
+                                Lead.CreatedDate is within the plan year.
+                                <br>
+                                <small>Salesforce report: Lead Report where [Time Frame: Date Field
+                                    = Create Date], [Time Frame: Range: Custom:
+                                    From {{ breakdown_plan.start_date }}
+                                    To {{ breakdown_plan.end_date }}]
+                                </small>
+                            </td>
+                            <td>Plan Year:
+                                {{ breakdown_plan.start_date }}
+                                to {{ breakdown_plan.end_date }}</td>
+                            <td>{{ mqls_total_1 }}</td>
+                            <td>{{ mqls_total_1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Exclude ignored statuses</td>
+                            <td>Exclude leads that have a status that you asked us to ignore in the
+                                integration settings
+                                <br>
+                                {% if sfc.sfdc_statuses_to_ignore %}
+                                    <small>Salesforce report: Lead Report where [Time Frame: Date
+                                        Field
+                                        = Create Date], [Time Frame: Range: Custom:
+                                        From {{ breakdown_plan.start_date }}
+                                        To {{ breakdown_plan.end_date }}], [Filtered By: Lead
+                                        Status
+                                        not equal to {{ sfc.sfdc_statuses_to_ignore|join:"," }}]
+                                    </small>
+                                {% endif %}
+                            </td>
+                            <td>Ignore Lead
+                                Status(es)<br>{{ sfc.sfdc_statuses_to_ignore|join:","|default:"Not used" }}
+                            </td>
+                            <td>-{{ mqls_leads_excluded }}</td>
+                            <td>{{ mqls_total_2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Find "orphan" opportunities</td>
+                            <td>Find each Opportunity that does not have an
+                                associated Lead with a CreatedDate is within the plan year. This
+                                requires multiple steps.
+                                <table class="table small table-bordered">
+                                    <tr>
+                                        <td>3a</td>
+                                        <td>Count Opportunities</td>
+                                        <td>Count every non-deleted Salesforce Opportunity
+                                            where Lead.CreatedDate is within the plan year
+                                            <br>
+                                            <small>Salesforce report: Opportunity Report where
+                                                [Time Frame: Date Field
+                                                = Create Date], [Time Frame: Range: Custom:
+                                                From {{ breakdown_plan.start_date }}
+                                                To {{ breakdown_plan.end_date }}]
+                                            </small>
+                                        </td>
+                                        <td>Plan Year:
+                                            {{ breakdown_plan.start_date }}
+                                            to {{ breakdown_plan.end_date }}</td>
+                                        <td>{{ opportunities_total }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3b</td>
+                                        <td>Count Converted Leads</td>
+                                        <td>Count Leads that were converted to an Opportunity in the plan year
+                                            <br>
+                                            <small>Salesforce report: Lead Report where [Time
+                                                Frame: Date Field
+                                                = Converted Date], [Time Frame: Range: Custom:
+                                                From {{ breakdown_plan.start_date }}
+                                                To {{ breakdown_plan.end_date }}],
+                                                Opportunity ID not equal to ""]
+                                            </small>
+                                        </td>
+                                        <td>Plan Year:
+                                            {{ breakdown_plan.start_date }}
+                                            to {{ breakdown_plan.end_date }}</td>
+                                        <td>{{ converted_leads }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3c</td>
+                                        <td>Count Orphans</td>
+                                        <td>Subtact the result of 3b from 3a to get the number of orphan Opportunities.</td>
+                                        <td></td>
+                                        <td>{{ mqls_orphan }}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td></td>
+                            <td>+{{ mqls_orphan }}</td>
+                            <td>{{ mqls_total_3 }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

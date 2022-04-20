@@ -1,0 +1,338 @@
+{% extends 'reports/base_reports.html' %}
+{% load icmo_utils humanize %}
+{% block report_title_head %}Salesforce Lead Funnel{% endblock %}
+{% block report_title_page_title %}Salesforce Lead Funnel{% endblock %}
+{% block report_title_box_title %}Salesforce Lead Funnel: {{ report_period|title }}{% endblock %}
+{% block page_css %}
+    {{ block.super }}
+    <style>
+        .lead-funnels {
+            text-align: center;
+        }
+
+        .funnel {
+            display: inline-block;
+            height: 300px;
+            margin: 15px 65px;
+        }
+
+        .box-col {
+            width: 25%;
+        }
+    </style>
+{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function () {
+            var dataCurrentMonth = [
+                {% for lead in current_leads %}
+                    {% if lead.count %}
+                        {
+                            status: '{{lead.status}}',
+                            count:{{ lead.count }},
+                            color: '{{ empty|default:"#90cc38"|gradient:forloop.counter0}}'
+                        },
+                    {% endif %}
+                {% endfor %}
+            ];
+            var dataLastMonth = [
+                {% for lead in last_leads %}
+                    {% if lead.count %}
+                        {
+                            status: '{{lead.status}}',
+                            count:{{ lead.count }},
+                            color: '{{ empty|default:"#90cc38"|gradient:forloop.counter0}}'
+                        },
+                    {% endif %}
+                {% endfor %}
+            ];
+            var dataYTD = [
+                {% for lead in ytd_leads %}
+                    {% if lead.count %}
+                        {
+                            status: '{{lead.status}}',
+                            count:{{ lead.count }},
+                            color: '{{ empty|default:"#90cc38"|gradient:forloop.counter0}}'
+                        },
+                    {% endif %}
+                {% endfor %}
+            ];
+
+            function createChart(chartName, data, description) {
+                $("#" + chartName).kendoChart({
+                    title: {
+                        text: description,
+                        margin: {
+                            top: 10,
+                            bottom: 10,
+                        }
+                    },
+                    legend: {
+                        visible: false
+                    },
+                    dataSource: {
+                        data: data
+                    },
+                    series: [{
+                        type: "funnel",
+                        dynamicSlope: true,
+                        field: "count",
+                        categoryField: "status"
+
+                    }],
+                    seriesDefaults: {
+                        labels: {
+                            visible: true,
+                            background: "#333333",
+                            padding: 3,
+                            color: "white",
+                            template: "#= category #: #= value#"
+                        },
+                        dynamicSlope: false,
+                        dynamicHeight: false
+                    },
+                    tooltip: {
+                        visible: true,
+                        template: "#= category # #= kendo.format('{0:p}',value/dataItem.parent()[0].count)#"
+                    }
+                });
+            }
+
+            function createCharts() {
+                createChart("currentMonthFunnel", dataCurrentMonth, "{{ current_month|title }}");
+                createChart("lastMonthFunnel", dataLastMonth, "{{ last_month|title }}");
+                createChart("YTDFunnel", dataYTD, "Lead Funnel YTD");
+            }
+
+            createCharts();
+            $('#current-history').kendoGrid({sortable: true, filterable: true});
+        }());
+    </script>
+{% endblock %}
+{% block box_body %}
+    <div class="row">
+        <div class="filter">
+            <form class='form-inline' method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="periodMonth">Period: </label>
+                    <select class="form-control" id="reportMonth" name="reportMonth">
+                        {% for period in report_periods %}
+                            <option value="{{ period }}"
+                                    {% if period == report_period %}selected{% endif %}>
+                                {{ period|deslugify }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reportSource">Source: </label>
+                    <select class="form-control" id="reportSource" name="reportSource">
+                        <option value="">All</option>
+                        {% for source in report_sources %}
+                            <option value="{{ source }}"
+                                    {% if source == report_source %}selected{% endif %}>
+                                {{ source }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reportOutcome">Main Outcome: </label>
+                    <select class="form-control" id="reportOutcome" name="reportOutcome">
+                        {% for outcome in report_outcomes %}
+                            <option value="{{ outcome }}"
+                                    {% if outcome == report_outcome %}selected{% endif %}>
+                                {{ outcome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="reportInferred"
+                                       name="reportInferred" {% if report_inferred %}
+                                       checked{% endif %}> Show Inferred
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="reportRevenue"
+                                       name="reportRevenue" {% if report_revenue %}
+                                       checked{% endif %}> Show Revenue
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="reportData"
+                                       name="reportData" {% if report_data %}
+                                       checked{% endif %}> Show Underlying Data Table
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="periodMonth">Statuses: </label>
+                    {% for status in statuses %}
+                        <input type="checkbox" name="statuses" value="{{ status }}"
+                               {% if status in chosen_statuses %}checked{% endif %}> {{ status }}
+                        &nbsp; &nbsp;
+                    {% endfor %}
+                </div>
+
+                <input type="submit" class="btn btn-bordered btn-primary" value="Run Report"/>
+            </form>
+        </div>
+        <div class="col-sm-4">
+            <div class="lead-funnels k-content wide">
+                <div class='funnel' id="currentMonthFunnel"></div>
+            </div>
+            <p class="text-center">
+                <b>Other Outcomes</b><br>{% for outcome in current_outcomes %}{{ outcome.status }}:
+                {{ outcome.count }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </p>
+            <p class="text-center">
+                <b>All Closed Won</b><br>{{ current_closed_won }}
+            </p>
+
+            {% if report_revenue %}
+                <p class="text-center">
+                    <b>Total Closed Won Sales:
+                       ${{ current_total_sale|default:"0"|floatformat:"0"|intcomma }}</b>
+                </p>
+                <p class="text-center">
+                    <b>Avg Closed Won Sale:
+                       ${{ current_average_sale|default:"0"|floatformat:"0"|intcomma }}</b>
+                </p>
+            {% endif %}
+        </div>
+        <div class="col-sm-4">
+            <div class="lead-funnels k-content wide">
+                <div class='funnel' id="lastMonthFunnel"></div>
+            </div>
+            <p class="text-center">
+                <b>Other Outcomes</b><br>{% for outcome in last_outcomes %}{{ outcome.status }}:
+                {{ outcome.count }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </p>
+            <p class="text-center">
+                <b>All Closed Won</b><br>{{ last_closed_won }}
+            </p>
+            {% if report_revenue %}
+                <p class="text-center">
+                    <b>Total Closed Won Sales:
+                       ${{ last_total_sale|default:"0"|floatformat:"0"|intcomma }}</b>
+                </p>
+                <p class="text-center">
+                    <b>Avg Closed Won Sale:
+                       ${{ last_average_sale|default:"0"|floatformat:"0"|intcomma }}</b>
+                </p>
+            {% endif %}
+        </div>
+        <div class="col-sm-4">
+            <div class="lead-funnels k-content wide">
+                <div class='funnel' id="YTDFunnel"></div>
+            </div>
+            <p class="text-center">
+                <b>Other Outcomes</b><br>{% for outcome in ytd_outcomes %}{{ outcome.status }}:
+                {{ outcome.count }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </p>
+            <p class="text-center">
+                <b>All Closed Won</b><br>{{ ytd_closed_won }}
+            </p>
+            {% if report_revenue %}
+                <p class="text-center">
+                    <b>Total Closed Won Sales:
+                       ${{ ytd_total_sale|default:"0"|floatformat:"0"|intcomma }}</b>
+                </p>
+                <p class="text-center">
+                    <b>Avg Closed Won Sale:
+                       ${{ ytd_average_sale|default:"0"|floatformat:"0"|intcomma }}</b>
+                </p>
+            {% endif %}
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col-md-12 small">
+            <b>About</b>
+            <p>This report is generated from live data retrieved on each sync with Salesforce.
+               This report queries the event history for each Salesforce Lead & Opportunity
+               and shows an up to date snapshot tally of all Lead Status and Opportunity Stage
+               changes for the given time period.</p>
+            <p>In order to show a funnel events are only considered for Leads (or orphan
+               Opportunities)
+               that were <i>created</i> in the given time period. Ex: a funnel showing sales in May
+               will only show sales for Leads created in May.
+            </p>
+            <p>
+                Further in order to show funnel stage progression iCMO infers skipped stages, so
+                for example if an Opportunity is created at the Proposal stage and the next stage
+                update is Closed Won, iCMO will infer that the intermediary stage
+                Had a Meeting occurred. This can be disabled by clicking Show Inferred.
+            </p>
+        </div>
+    </div>
+    {% if report_data %}
+        <div class="row">
+            <div class="col-md-12">
+                <h5>All events for {{ current_month|title }}</h5>
+                <table id='current-history' class="table table-responsive table-condensed small">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Event</th>
+                        <th>Source</th>
+                        <th>Inferred?</th>
+                        <th>Lead</th>
+                        <th>Opportunity</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for event in current_history %}
+                        <tr>
+                            <td>{{ event.updated|date:"SHORT_DATETIME_FORMAT" }}</td>
+                            <td>{{ event.status }}</td>
+                            <td>{{ event.status_source }}</td>
+                            <td>{{ event.is_virtual }}</td>
+                            <Td>
+                                {% if event.virtual_contact.salesforce_lead %}
+                                    {{ event.virtual_contact.salesforce_lead.sfdc_name }}
+                                    ({{ event.virtual_contact.salesforce_lead.sfdc_company }})
+                                    <a href="
+
+
+
+
+
+                                            {{ sfc.salesforce_url }}{{ event.virtual_contact.salesforce_lead.sfdc_id }}"
+                                       target="_blank"><i class="fa fa-external-link"></i></a>
+                                {% endif %}
+                            </td>
+                            <td>{% if event.virtual_contact.salesforce_opportunity %}
+                                {{ event.virtual_contact.salesforce_opportunity.sfdc_name }}
+                                <a href="
+
+
+
+
+
+                                        {{ sfc.salesforce_url }}{{ event.virtual_contact.salesforce_opportunity.sfdc_id }}"
+                                   target="_blank"><i class="fa fa-external-link"></i></a>
+                            {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

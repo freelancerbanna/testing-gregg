@@ -1,0 +1,102 @@
+{% extends 'base_app.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize %}
+{% block title %}Performance Management{% endblock %}
+{% block page_title %}Performance Management{% endblock %}
+{% block app_js_libs %}
+    <script src="{% static 'js/budgets.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/charts.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/performance.js' %}" type="text/javascript"></script>
+{% endblock %}
+{% block app_extra_js %}
+    <script type="text/javascript">
+        $(function () {
+            $('a[data-toggle="tab"]').on('shown.bs.tab', ICMO.core.refreshCharts);
+            $('a[data-toggle="tab"]').on('shown.bs.tab', ICMO.core.refreshSplitters);
+            $('div.collapse').on('shown.bs.collapse', ICMO.core.refreshCharts);
+        });
+    </script>
+    <script type="text/x-kendo-template" id="budgetNameTemplate">
+        # if(item_type === 'category'){ #
+        <span><i class="fa fa-folder-o"></i> &nbsp; #: name #</span>
+        # } else { #
+        # if(item_type === 'custom'){ #
+        <i class="fa fa-money fa-fw"></i>
+        # } else { #
+        <i class="fa fa-dot-circle-o fa-fw"></i>
+        # } #
+        &nbsp; #: name #
+        # } #
+    </script>
+    <script type="text/x-kendo-template" id="campaignSummaryNameTemplate">
+        <div class="budget_cell">
+            <b>#: name #</b>
+
+            <div class="subrow">
+                MQLs<br>
+                SQLs<br>
+                Sales<br>
+                Total Sales Revenue<br>
+            </div>
+        </div>
+    </script>
+    <script type="text/x-kendo-template" id="campaignSummaryValueTemplate">
+        <div class="budget_value_cell_spacer">&nbsp;</div>
+        <div>
+            <span class="budget_value">#: mql #</span>
+            <span class="budget_value">#: sql #</span>
+            <span class="budget_value">#: sales #</span>
+            <span class="budget_value">#: sales_revenue__localized_whole_number #</span>
+        </div>
+    </script>
+    <script type="text/x-kendo-template" id="campaignSummaryFooterTemplate">
+        <div>
+            <span class="budget_value">#: mql #</span>
+            <span class="budget_value">#: sql #</span>
+            <span class="budget_value">#: sales #</span>
+            <span class="budget_value">$#: sales_revenue__amount #</span>
+        </div>
+    </script>
+{% endblock %}
+{% block app_summary_js %}
+    <script type="text/javascript">
+        var summaryGrid = ICMO.apps.performance.summary.create($('#grid-summary'));
+        ICMO.apps.performance.summary.createMQLChart($('#radar-summary-mql'), summaryGrid.dataSource);
+        ICMO.apps.performance.summary.createSQLChart($('#radar-summary-sql'), summaryGrid.dataSource);
+        ICMO.apps.performance.summary.createSalesChart($('#radar-summary-sales'), summaryGrid.dataSource);
+        ICMO.apps.performance.dataEntry.initTabs("{{ api_url }}");
+    </script>
+{% endblock %}
+{% block app_summary_charts %}
+    <div class="row">
+        <div class="col-sm-4">
+            <div id="radar-summary-mql"></div>
+        </div>
+        <div class="col-sm-4">
+            <div id="radar-summary-sql"></div>
+        </div>
+        <div class="col-sm-4">
+            <div id="radar-summary-sales"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block app_segment_charts %}
+    <div class="row">
+        <div class="col-sm-4">
+            <div id="radar-segment-{{ segment.slug }}-mql"></div>
+        </div>
+        <div class="col-sm-4">
+            <div id="radar-segment-{{ segment.slug }}-sql"></div>
+        </div>
+        <div class="col-sm-4">
+            <div id="radar-segment-{{ segment.slug }}-sales"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block app_summary_content %}
+    <div id="grid-summary" data-tools="grid-summary-tools"
+         data-api-url="{{ summary_api_url }}?resolution=segment">
+    </div>
+{% endblock %}
+{% block app_segment_tools %}
+{% endblock %}

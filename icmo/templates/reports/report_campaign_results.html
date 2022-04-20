@@ -1,0 +1,23 @@
+{% extends 'reports/base_reports.html' %}
+{% block report_title_head %}Performance by Campaign{% endblock %}
+{% block report_title_page_title %}Performance by Campaign{% endblock %}
+{% block report_title_box_title %}Performance by Campaign - {{ report_period|title }}{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function () {
+            ICMO.periods.periodGrid.create($('#dataGrid'), [
+                        'segment', 'program', 'campaign',
+                        'mql', 'sql', 'sales', 'average_sale', 'sales_revenue'
+                    ],
+                    ['segment', 'program'], 'actual');
+        }());
+    </script>
+{% endblock %}
+{% block box_body %}
+    {% include 'reports/includes/period_filter.html' %}
+    <div id="dataGrid"
+         data-api-url="{{ revenue_plan_period_api_url }}?resolution=campaign&&period={{ report_period }}"
+    ></div>
+
+{% endblock %}

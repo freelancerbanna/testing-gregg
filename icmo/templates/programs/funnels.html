@@ -1,0 +1,68 @@
+{% load static humanize %}
+<div class="row">
+    <div class="col-md-6 col-md-offset-3">
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <h4>Lead Generation</h4>
+            </div>
+            <div class="col-xs-4 text-center">
+                <h4>Lead Management</h4>
+            </div>
+            <div class="col-xs-4 text-center">
+                <h4>Sales</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <b>Contacts</b><br>
+                <span class='funnel-contacts'></span>
+            </div>
+            <div class="col-xs-4 text-center">
+            </div>
+            <div class="col-xs-4 text-center">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <img src="{% static 'img/funnels.png' %}" class="img img-responsive">
+
+                <div class="funnel-content-wrapper">
+                    <div class="funnel-content-table">
+                        <div class="funnel-content-row">
+                            <div class="row funnel-content-cell">
+                                <div class="col-xs-4 text-center">
+                                    <b>Conversion</b><br>
+                                    <span class='funnel-touches_to_mql_conversion'></span>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <b>Conversion</b><br>
+                                    <span class='funnel-mql_to_sql_conversion'></span>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <b>Conversion</b><br>
+                                    <span class='funnel-sql_to_sale_conversion'></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <b>MQLs</b><br>
+                <span class='funnel-mql'></span>
+            </div>
+            <div class="col-xs-4 text-center">
+                <b>SQLs</b><br>
+                <span class='funnel-sql'></span>
+            </div>
+            <div class="col-xs-4 text-center">
+                <b>Sales</b><br>
+                <span class='funnel-sales'></span>
+            </div>
+        </div>
+
+    </div>
+</div>

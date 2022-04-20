@@ -1,0 +1,30 @@
+<form method="POST">
+    {% csrf_token %}
+    <table class="table table-striped">
+        <tr>
+            <th>Hubspot Industry Name</th>
+            <th>iCMO Segment</th>
+        </tr>
+        {% for industry_map in segments_map %}
+            <tr>
+                <td>{{ industry_map.hs_value_1 }}</td>
+                <td>
+                    <select name="industry-{{ industry_map.hs_value_2 }}">
+                        <option value="">None</option>
+                        {% for segment in segments %}
+                            <option value="{{ segment.slug }}"
+                                    {% if industry_map.segment == segment %}selected{% endif %}>
+                                {{ segment.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="form-actions pull-right">
+        <input type="submit" name="submit" value="Save"
+               class="btn btn-primary btn-bordered"
+               id="submit-save">
+    </div>
+</form>

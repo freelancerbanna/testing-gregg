@@ -1,0 +1,67 @@
+{% extends 'pdf_base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Account Contract{% endblock %}
+{% block page_css %}
+    <style type="text/css">
+        th {
+            text-align: left
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <h1>intelligentRevenue Order Form</h1>
+    <hr>
+    <div class="row">
+        <div class="col-sm-6">
+            {% include 'billing/includes/payment_summary.html' with subscription=object.subscription %}
+        </div>
+    </div>
+    {% include object.template_name %}
+    <hr>
+    <table>
+        <tr>
+            <td>
+                <h3>{{ object.company_name }}</h3>
+                <table class="table table-striped">
+                    <tr>
+                        <th>Name</th>
+                        <td>{{ object.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Title</th>
+                        <td>{{ object.title }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date</th>
+                        <td>{{ object.date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Signature</th>
+                        <td><img src='{{ object.signature_uri_b64 }}'></td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <h3>intelligentRevenue</h3>
+                <table class="table table-striped">
+                    <tr>
+                        <th>Name</th>
+                        <td>Robert Jurkowski</td>
+                    </tr>
+                    <tr>
+                        <th>Title</th>
+                        <td>CEO</td>
+                    </tr>
+                    <tr>
+                        <th>Date</th>
+                        <td>{{ object.date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Signature</th>
+                        <td><img src='{{ countersignature_uri}}' width="200"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+{% endblock %}

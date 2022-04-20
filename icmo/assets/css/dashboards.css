@@ -1,0 +1,361 @@
+th.fixed-width{
+    width: 80px;
+    line-height: 110%;
+}
+.dashboard-table-wrapper{
+    background-color: #fff;
+}
+.plan.dashboard-row,
+.totals-row,
+.dashboard-row input{
+    display: none;
+}
+.segment-tab{
+    padding-left: 0;
+    padding-right: 0;
+}
+.dashboard-row td{
+    font-size: 13px;
+}
+.dashboard-row td .fa-stack{
+    font-size: 8px;
+}
+
+.dashboard-title{
+    min-width: 260px;
+}
+.dashboard-indent, .tools {
+    width: 54px;
+}
+td input{
+    width: 64px;
+}
+table{
+    border-color: #fff;
+}
+table thead th, table tbody td, table tr td, table tbody td, table tr td{
+    padding: 3px;
+    background-color: #fff;
+    border-top: 0;
+    border-top: 1px solid #ccc;
+}
+.dashboard-row, .dashboard-row td{
+    border-color: #fff;
+}
+table thead th{
+    border-bottom: 2px solid #aaa;
+}
+
+.dashboard-contacts,
+.dashboard-program_cost,
+.dashboard-mql,
+.dashboard-sql,
+.dashboard-sales,
+.dashboard-cost_per_mql,
+.dashboard-cost_per_sql,
+.dashboard-average_sale,
+.dashboard-total_sale_value,
+.dashboard-contact_to_mql,
+.dashboard-mql_to_sql,
+.dashboard-sql_to_sale,
+.dashboard-roi
+{
+    font-size: 12px;
+    vertical-align: top;
+    color: #444!important;
+    text-align: center;
+    vertical-align: bottom;
+}
+.dashboard-title{
+    font-size: 14px;
+    vertical-align: bottom;
+    color: #000;
+    text-indent: 1em;
+}
+.totals-row .title{
+    text-indent: 1em;
+}
+
+.dashboard-row-toggle{
+    text-decoration: none;
+    color: #000;
+    text-indent: 1em;
+    font-weight: normal;
+}
+.actuals-row-toggle, .campaign .fa-wrench{
+    text-decoration: none;
+    color: #000;
+    font-weight: bold;
+}
+.delete-campaign-button {
+    color: #f76666;
+}
+.add-campaign-button{
+    color: #7fd29b;
+}
+tr.plan td, tr.plan-totals td,
+tr.actuals td, tr.actuals-totals td,
+tr.delta td, tr.delta-totals td,
+tr.campaign td{
+    font-size: 12px;
+    font-weight: bold;
+    text-align: right;
+}
+tr.plan td, tr.plan-totals td{
+    color: #40dcff;
+}
+tr.delta td, tr.delta-totals td{
+    color: #7fd29b;
+}
+tr.delta td span.icmo-delta-negative, 
+tr.delta-totals td span.icmo-delta-negative{
+    color: #f76666;
+}
+tr.plan td.title, tr.plan-totals td.title,
+tr.actuals td.title, tr.actuals-totals td.title,
+tr.delta td.title, tr.delta-totals td.title{
+    color: #000;
+    text-align: left;
+    font-weight: bold;
+}
+tr.plan-totals td{
+    background-color: #efefee;
+}
+tr.actuals-totals td{
+    background-color: #f7f7f5;
+}
+table tbody tr.campaign.first td{
+    border-top: 1px solid #aaa;
+}
+table tbody tr.campaign td.dashboard-indent{
+    border-top: none;
+}
+tr.add-campaign td, tr.campaign td.tools{
+    text-align: left;
+}
+.funnel-header div,
+.funnel-set div{
+    text-align: center;
+    margin-left: 0;
+    margin-right: 1.23%
+}
+.funnel-middle{
+    margin-right: .61%!important;
+    margin-left: .61%!important;
+}
+.funnel-right{
+    margin-left: 1.23%!important;
+    margin-right: 0!important;
+}
+.funnel-header h1{
+    font-size: 16px;
+    color: #a8a8a8;
+    margin-bottom: 0;
+}
+.content-label{
+    font-size: 14px;
+}
+table.funnel-legend, table.funnel-legend td{
+    background-color: transparent;
+    border-color: transparent;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0;
+}
+.plan-label, .actuals-label, .delta-label{
+    font-weight: normal!important;
+    font-size: 10px;
+    line-height: 100%;
+}
+.funnels{
+    margin-top: -20px;
+    min-height: 354px!important;
+    padding-top: 72px;
+}
+.funnel-set table.funnel-legend{
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.plan-value{
+    color: #40dcff;
+        font-weight: normal!important;
+}
+.delta-value{
+    color: #7fd29b;
+}
+input.name{
+    width: 107px;
+}
+
+/* fancy shapes */
+
+.circle { 
+    width: 42px;
+    height: 42px;
+    line-height: 42px;
+    background: grey;
+    color: #fff;
+    font-size: 20px;
+    margin-bottom: 12px;
+    text-align: center;
+    vertical-align: middle; 
+    -moz-border-radius: 21px; 
+    -webkit-border-radius: 21px; 
+    border-radius: 21px;
+}
+.diamond-content{
+    height: 42px;
+    width: 42px;
+    line-height: 42px;
+    text-align: center;
+    margin-top: -55px;
+    float: left;
+    position: relative;
+    color: #fff;
+    font-size: 20px;
+}
+.diamond{
+    height: 42px;
+    width: 42px;
+    text-align: center;
+    padding-top: 7px;
+    margin-bottom: 12px;
+}
+
+.diamond:before {
+    content:"";
+    position: absolute;
+    width: 0; 
+    height: 0;
+    border-left: 15px solid transparent; 
+    border-right: 15px solid transparent; 
+    border-bottom: 20px solid red;
+    margin: -5px 0 0 -15px;    
+}
+
+.diamond:after {
+    content:"";
+    position: absolute;
+    width: 0; 
+    height: 0; 
+    border-left: 15px solid transparent; 
+    border-right: 15px solid transparent; 
+    border-top: 20px solid blue;
+    margin: 15px 0 0 -15px;
+}
+
+.circles .eight.columns, .diamonds .eight.columns {
+    padding-top: 7px;
+}
+.past-due-milestone.diamond:before,
+.past-due-milestone.diamond:after {
+    border-bottom-color: #c30000;
+    border-top-color: #c30000;
+}
+.jeopardy-milestone.diamond:before,
+.jeopardy-milestone.diamond:after {
+    border-bottom-color: #d6e62a;
+    border-top-color: #d6e62a;
+}
+.on-track-milestone.diamond:before,
+.on-track-milestone.diamond:after {
+    border-bottom-color: #29aa0b;
+    border-top-color: #29aa0b;
+}
+.complete-milestone.diamond:before,
+.complete-milestone.diamond:after {
+    border-bottom-color: #000;
+    border-top-color: #000;
+}
+.past-due{
+    background: #c30000;
+}
+.past-due-label{
+    color: #c30000;
+}
+.jeopardy{
+    background: #d6e62a;
+}
+.jeopardy-label{
+    color: #d6e62a;
+}
+.on-track{
+    background: #29aa0b;
+}
+.on-track-label{
+    color: #29aa0b;
+}
+.complete{
+    background: #000;
+}
+.complete-label{
+    color: #000;
+}
+.cmo-label, .budget-categories{
+    line-height: 105%;
+    font-size: 16px;
+}
+.resources, .budgets {
+    margin-top: 72px;
+}
+.budget-categories .graph{
+    height: 20px;
+}
+.budget-categories .label{
+    text-align: right;
+    line-height: 105%;
+    color: #000;
+    font-size: 10px;
+}
+.other-budget-plan-bar,
+.total-budget-plan-bar,
+.lead-generation-plan-bar{
+    background-color: #378eae;
+}
+.other-budget-actual-bar,
+.total-budget-actual-bar,
+.lead-generation-actual-bar{
+    background-color: #d6e62a;
+}
+.budget-chart-legend{
+    display: inline-block;
+    width: 50px;
+    height:20px;
+    position: relative;
+    top: 5px;
+}
+.budget-categories .row{
+    margin-bottom: 7px;
+}
+.budget-categories .row .label{
+    top: -5px;
+    position: relative;
+}
+.budget-categories .row .four.columns.label{
+    top: 0;
+    margin-top: 7px;
+}
+.budgets hr, .resources hr{
+    margin-bottom: 0;
+}
+.total-budget .row{
+    height: 120px;
+}
+.vert-chart-wrapper div{
+    display: block;
+    float: left;
+    position: relative;
+    bottom: -77px;
+    width: 50%;
+}
+.total-budget .label{
+    color: #000;
+    display: block;
+    text-align: center;
+    font-size: 10px;
+}
+.lead-generation-plan .label{
+    position: relative;
+    top: -5px;
+}

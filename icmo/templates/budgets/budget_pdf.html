@@ -1,0 +1,93 @@
+{% load humanize %}
+{% load icmo_utils %}
+{% load i18n %}
+{% load cloudinary %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro"/>
+        <style>
+        {{ gumby_css|safe }}
+        .footer-left, .footer-right{
+            padding:25px;
+            width: 50%;
+        }
+        .footer-left{
+            float: left;
+        }
+        .footer-right{
+            float: right;
+            text-align: right;
+        }
+        a{
+            color: #ccc;
+            text-decoration:none;
+        }
+        .bold{
+            font-weight: bold;
+        }
+        .page-wrapper{
+            border: 1px solid grey;
+            page-break-after:always;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            width: 100%;
+            padding-top: 25px;
+        }
+        .page-wrapper > div, .funnel-info{
+            max-width: 1060px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+        .spreadsheet-image{
+            width: 1040px;
+            height: auto;
+        }
+        .tiny-label{
+            font-size: 10px;
+        }
+        .huge-label{
+            font-size: 50px;
+        }
+        .segment-row td, .totals td{
+            text-align: right;
+        }
+        td.name{
+            text-align: left;
+        }
+        </style>
+    </head>
+    <body style="width: 1080px;">
+
+<div id="application">
+    <div style="width:50%; text-align:left;display:block;float:left;">
+        {% if company.logo %}
+            {% cloudinary company.logo format="png" height=45 crop="fill" %}
+        {% endif%}
+        <h2>{%trans 'Campaigns Budget' %}</h2>
+        <div><span class="bold">{% trans 'Company Name' %}:</span> {{ plan.company.name }}</div>
+        <div><span class="bold">{% trans 'Revenue Plan Name' %}:</span> {{ plan.name }}</div>
+        <div><span class="bold">{% trans 'Plan Date Range' %}:</span> 1/1/{{ plan.plan_year }} - 12/31/{{ plan.plan_year }}</div>
+        <div><span class="bold">{% trans 'Report Date' %}:</span> {{ plan.created|date:"m/d/Y" }}</div>
+    </div>
+    <div style="width:50%; text-align:right;display:block;float:right;">
+        <img src="data:image/png;base64,{{ icmo_logo|safe }}"/>
+    </div>
+    <br style="clear:both" />
+    <section id="budget" class="tabs">
+    {% for image in images %}
+    <div class="page-wrapper">
+        <h1 style="margin-left: 50px">{{ image.name }}</h1>
+        <img src="{{ image.data|safe }}" class="spreadsheet-image" />
+    </div>
+    {% endfor%}
+
+    </section>
+</div>
+
+    </body>
+</html>
+
+

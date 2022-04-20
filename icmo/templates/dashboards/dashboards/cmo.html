@@ -1,0 +1,121 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Performance</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-sm-2 col-sm-offset-1 text-center">
+                        <h4>Projected Revenue Growth</h4>
+                    </div>
+                    <div class="col-sm-2 text-center">
+                        <h4>Revenue Growth To-Date</h4>
+                    </div>
+                    <div class="col-sm-3 text-center">
+                        <h4>Annual Revenue To-Date</h4>
+                    </div>
+                    <div class="col-sm-3 text-center">
+                        <h4>Quarter Revenue To-Date</h4>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-sm-2 col-sm-offset-1">
+                        <div class="growth-number icmo-green">{{ segment.growth.goal.annual }}%</div>
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}PlanGrowthChart"></div>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="growth-number icmo-blue">{{ segment.growth.actual.annual }}%</div>
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}ActualGrowthChart"></div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}AnnualRevenueToDate"></div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}QuarterRevenueToDate"></div>
+
+                    </div>
+                </div>
+
+                {% include 'dashboards/includes/funnels.html' with funnel_data=segment.funnel_data %}
+                <div class="row margin-bottom">
+                    <div class="col-sm-4 col-sm-offset-1">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}MqlChart"></div>
+                    </div>
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}SqlChart"></div>
+                    </div>
+                </div>
+                <div class="row margin-bottom">
+                    <div class="col-sm-4 col-sm-offset-1">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}SalesChart"></div>
+                    </div>
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}TotalSalesValueChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Budget</h3>
+            </div>
+            <div class="box-body">
+                <div class="row margin-bottom">
+                    <div class="col-sm-4 col-sm-offset-1">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}BudgetTotalChart">
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <div id="{% if is_summary %}company-{% else %}segment-{% endif %}{{ segment.slug }}BudgetChart"
+                             data-api-url="{% spaceless %}
+                                     {% if is_summary %}{{ revenue_plan_period_api_url }}?period_type=month&resolution=revenue_plan
+                                         {% else %}{{ api_url }}{{ segment.slug }}/periods/?period_type=month&resolution=segment{% endif %}{% endspaceless %}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--
+<div class="row">
+    <div class="col-md-6">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Resources</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2">
+                        <div class="task-status-overview">
+                            <div class="bubble-bg bg-red">{{ segment.task_status.PAST_DUE }}</div>
+                            Projects/Tasks <span class="text-red">"Past Due"</span>
+                        </div>
+                        <div class="task-status-overview">
+                            <div class="bubble-bg bg-yellow">{{ segment.task_status.AT_RISK }}</div>
+                            Projects/Tasks <span class="text-yellow">"At Risk"</span>
+                        </div>
+                        <div class="task-status-overview">
+                            <div class="bubble-bg bg-green">{{ segment.task_status.ON_TRACK }}</div>
+                            Projects/Tasks <span class="text-green">"On Track"</span>
+                        </div>
+                        <div class="task-status-overview">
+                            <div class="bubble-bg bg-black">{{ segment.task_status.COMPLETE }}</div>
+                            Projects/Tasks "Complete"
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-6">
+    </div>
+</div>
+    -->

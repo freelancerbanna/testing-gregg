@@ -1,0 +1,314 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags humanize %}
+{% load blank_kwargs_url from icmo_utils %}
+
+{% block title %}Manage Salesforce Integration{% endblock %}
+{% block page_title %}Manage Salesforce Integration{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script>
+        function alertDisconnectSalesforceSubmit() {
+            bootbox.confirm("Disconnecting from Salesforce will remove ALL Salesforce data from iCMO, including all " +
+                    "campaigns imported from Salesforce.  Are you sure you want to continue?",
+                    function () {
+                        $('#disconnectSalesforceForm').submit();
+                    }
+            )
+        }
+        function alertDisconnectRevenuePlanSubmit() {
+            bootbox.confirm("Disconnecting this revenue plan will remove all campaigns imported from Salesforce into this revenue plan.  Other Salesforce data will not be affected." +
+                    "Do you want to continue?",
+                    function () {
+                        $('#disconnectRevenuePlanForm').submit();
+                    }
+            )
+        }
+
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Salesforce Connection Status
+                        {% if salesforce.is_syncing %}
+                            <small><i class="fa fa-refresh fa-spin"></i> Syncing...</small>
+                        {% endif %}
+                        <div class="pull-right">
+                            <a class="btn btn-bordered btn-primary btn-sm"
+                               href="{% blank_kwargs_url 'sfdc_settings' %}">
+                                <i class="fa fa-gears"></i>
+                                Settings
+                            </a>
+                            <a class="btn btn-bordered btn-primary btn-sm"
+                               onclick="$('#syncSalesforceForm').submit();">
+                                <i class="fa fa-refresh"></i>
+                                Sync Now
+                            </a>
+                            <a class="btn btn-bordered btn-danger btn-sm"
+                               onclick="alertDisconnectSalesforceSubmit();">
+                                <i class="fa fa-chain-broken"></i>
+                                Disconnect from Salesforce</a>
+                        </div>
+                    </h3>
+
+                    <form id='syncSalesforceForm' method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="sync">
+                    </form>
+                    <form id='disconnectSalesforceForm' method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="disconnect_salesforce">
+                    </form>
+
+                </div>
+                <div class="box-body">
+                    <p>iCMO queries your Salesforce account in order to automatically create
+                        iCMO Campaigns, drawing in actual performance data from Salesforce.
+                        Connect one or more revenue plans and set your mapping to enable the
+                        Salesforce Integration.
+                    </p>
+                    <hr>
+                    <h4>Salesforce Data Imported</h4>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Leads</th>
+                            <th>Accounts</th>
+                            <th>Opportunities</th>
+                            <th>Sales</th>
+                            <th>Total Sales Amount</th>
+                            <th>Sources</th>
+                        </tr>
+                        <tr>
+                            <td>{{ object.leads.count }}</td>
+                            <td>
+                                {{ object.accounts.count }}
+                            </td>
+                            <td>
+                                {{ object.opportunities.count }}
+                                <small>({{ orphan_opportunities_count }} orphans)</small>
+                            </td>
+                            <td>{{ sales_count }}</td>
+                            <td>${{ sales_total|intcomma|default_if_none:"0" }}</td>
+                            <td width="30%">
+                                <small>{{ sources|join:", " }}</small>
+                            </td>
+
+                        </tr>
+                    </table>
+                    <hr>
+                    <small>
+                        <b>Notes:</b>
+                        <ul>
+                            <li>iCMO looks for a clear progression from Lead (MQL), to
+                                Opportunity (SQL), to Opportunity - Closed Won (Sale)
+                            </li>
+                            <li>The lead source of a Lead is considered the authoritative
+                                source for that chain of events, from lead to sale.
+                            </li>
+                            <li>'Orphan' opportunities are opportunities that
+                                were created directly, not by converting a lead.
+                                In order to preserve funnels iCMO will tally a virtual lead in
+                                the same
+                                month that the opportunity was created.
+                            </li>
+                            <li>Accounts are used by Orphan Opportunities to provide Industry
+                                and Annual Revenue information. Otherwise these two pieces of
+                                information are taken from the Lead
+                            </li>
+                            <li>Leads and Orphan Opportunities that do not have a lead source
+                                assigned will have their source set to 'Unknown'
+                            </li>
+                        </ul>
+                    </small>
+                </div>
+                <div class="box-footer small">
+                    <p>
+                        iCMO is importing your Salesforce contacts and
+                        refreshing automatically
+                        every 24 hours.
+                        {% if salesforce.last_sync %}
+                            The last successful connection happened on:
+                            {{ salesforce.last_sync }}
+                        {% else %}
+                            iCMO has not yet synced with salesforce or is in
+                            the process of
+                            syncing.  Please check back later.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Connected Plans</h3>
+                </div>
+                <div class="box-body">
+                    <p>
+                        iCMO only imports Salesforce performance
+                        data into plans that have been
+                        "connected".
+                        Only published revenue plans can be
+                        connected to Salesforce.
+                    </p>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Plan Year</th>
+                            <th>Revenue Plan</th>
+                            <th>Mapped Data</th>
+                            <th>Tools</th>
+                        </tr>
+                        {% for sf_plan in connected_plans %}
+                            <tr>
+                                <td>{{ sf_plan.revenue_plan.plan_year }}</td>
+                                <td>{{ sf_plan.revenue_plan.name }}</td>
+                                <td>
+                                    {% if salesforce.is_syncing %}Syncing{% else %}
+                                        <table class="table small table-condensed">
+                                            <thead>
+                                            <tr>
+                                                <th>
+                                                    <a href="{% blank_kwargs_url 'sfdc_breakdown' company_slug=selected_company.slug breakdown_plan_slug=sf_plan.revenue_plan.slug %}">
+                                                        <i class='fa fa-info-circle'></i> Explain
+                                                    </a></th>
+                                                <th>MQLs</th>
+                                                <th>SQLs</th>
+                                                <th>Sales</th>
+                                                <th>Revenue</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td>Mapped</td>
+                                                <td>{{ sf_plan.mapped_events_total.mql }}</td>
+                                                <td>{{ sf_plan.mapped_events_total.sql }}</td>
+                                                <td>{{ sf_plan.mapped_events_total.sales }}</td>
+                                                <td>
+                                                    ${{ sf_plan.mapped_events_total.sales_revenue|intcomma }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Unmapped</td>
+                                                <td>{{ sf_plan.unmapped_events_total.mql }}</td>
+                                                <td>{{ sf_plan.unmapped_events_total.sql }}</td>
+                                                <td>{{ sf_plan.unmapped_events_total.sales }}</td>
+                                                <td>
+                                                    ${{ sf_plan.unmapped_events_total.sales_revenue|intcomma }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Total</td>
+                                                <td>{{ sf_plan.events_total.mql }}</td>
+                                                <td>{{ sf_plan.events_total.sql }}</td>
+                                                <td>{{ sf_plan.events_total.sales }}</td>
+                                                <td>
+                                                    ${{ sf_plan.events_total.sales_revenue|intcomma }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="vertical-button-bar">
+                                        <a class='btn btn-xs btn-primary btn-bordered'
+                                           href="{% blank_kwargs_url 'sfdc_map' company_slug=selected_company.slug map_plan_slug=sf_plan.revenue_plan.slug %}">
+                                            <i class="fa fa-gears"></i>
+                                            Map
+                                            Data {{ sf_plan.mapped_items_count.0 }}/{{ sf_plan.mapped_items_count.1 }}
+                                        </a><br>
+                                        <a class='btn btn-xs btn-primary btn-bordered'
+                                           href="{% blank_kwargs_url 'sfdc_events' company_slug=selected_company.slug events_plan_slug=sf_plan.revenue_plan.slug %}">
+                                            <i class="fa fa-file-text"></i>
+                                            Events Report
+                                        </a><br>
+                                        <a class='btn btn-xs btn-primary btn-bordered'
+                                           href="{% blank_kwargs_url 'sfdc_virtual_contacts' company_slug=selected_company.slug vc_plan_slug=sf_plan.revenue_plan.slug %}">
+                                            <i class="fa fa-file-text"></i>
+                                            Virtual Contacts Report
+                                        </a><br>
+                                        <a class='btn btn-xs btn-primary btn-bordered'
+                                           href="{% blank_kwargs_url 'sfdc_issues' company_slug=selected_company.slug issues_plan_slug=sf_plan.revenue_plan.slug %}">
+                                            <i class="fa fa-file-text"></i>
+                                            Issues Report
+                                        </a><br>
+                                        <a onclick="alertDisconnectRevenuePlanSubmit();"
+                                           class="btn btn-bordered btn-xs btn-danger"><i
+                                                class="fa fa-chain-broken"></i>
+                                            Disconnect
+                                        </a>
+
+                                    </div>
+                                    <form id='disconnectRevenuePlanForm'
+                                          method="POST">
+                                        {% csrf_token %}
+                                        <input type="hidden"
+                                               name="action"
+                                               value="disconnect_revenue_plan">
+                                        <input type="hidden"
+                                               name="revenue_plan_slug"
+                                               value="{{ sf_plan.revenue_plan.slug }}">
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3">
+                                    You have not connected any revenue plans.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Unconnected Plans</h3>
+                </div>
+                <div class="box-body">
+                    <p>
+                        iCMO only imports Salesforce performance
+                        data into plans that have been
+                        "connected".
+                        Only revenue plans that you have write
+                        access to can be connected to
+                        Salesforce.
+                    </p>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Revenue Plan</th>
+                            <th>Plan Year</th>
+                            <th>Connect to Salesforce</th>
+                        </tr>
+                        {% for plan in unconnected_plans %}
+                            <tr>
+                                <td>{{ plan.name }}</td>
+                                <td>{{ plan.plan_year }}</td>
+                                <td>
+                                    <a href="?connect_plan={{ plan.slug }}"
+                                       class="btn btn-bordered btn-primary btn-sm"><i
+                                            class="fa fa-link"></i>
+                                        Connect
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3">
+                                    You have not created or do not
+                                    have access to
+                                    any revenue plans.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

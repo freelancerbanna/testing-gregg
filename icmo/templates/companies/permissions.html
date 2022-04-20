@@ -1,0 +1,219 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils crispy_forms_tags %}
+{% block title %}Permissions Management{% endblock %}
+{% block page_title %}Permissions Management{% endblock %}
+{% block compressed_js %}
+    {{ block.super }}
+    <script src="{% static 'js/permissions.js' %}" type="text/javascript"></script>
+{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    {% include 'misc_widgets/grid_row_tools.html' %}
+    <script type="text/javascript">
+        $(function () {
+            {% for cu in company_users %}
+                var groupGrid = ICMO.apps.permissions.groups.createGrid($('#grid-groups-{{cu.company.slug}}'));
+                ICMO.apps.permissions.users.createGrid($('#grid-users-{{cu.company.slug}}'), groupGrid.dataSource);
+            {% endfor %}
+            ICMO.apps.permissions.initAddUserForm();
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    {% for cu in company_users %}
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">{{ cu.company.name }}
+                            <div class="box-tools pull-right">
+                                <button class="btn btn-box-tool" data-widget="collapse"><i
+                                        class="fa fa-minus"></i></button>
+                            </div>
+                        </h3>
+                    </div>
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs">
+                            <li class="active">
+                                <a href="#tab_{{ cu.company.slug }}_users" data-toggle="tab"
+                                   aria-expanded="true">
+                                    Users
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#tab_{{ cu.company.slug }}_groups" data-toggle="tab"
+                                   aria-expanded="false">
+                                    Groups
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane tab-content segment-tab active"
+                                 id="tab_{{ cu.company.slug }}_users">
+                                <br>
+
+                                <div class="box-tools grid-{{ cu.company.slug }}-users-tools">
+                                    {% if cu.can_change_permissions %}
+                                        <button class="btn btn-primary btn-bordered btn-sm grid-add-user"
+                                                title="Add a new user">
+                                            <i class="fa fa-plus"></i>&nbsp;
+                                            User
+                                        </button>
+                                    {% endif %}
+                                    <button class="btn btn-primary btn-sm grid-cancel"
+                                            title="Cancel changes"
+                                            disabled aria-disabled="true">
+                                        <i class="fa fa-undo"></i>
+                                    </button>
+                                    <div class="btn-group" role="group" aria-label="...">
+                                        <button class="btn btn-primary btn-sm grid-pdf"
+                                                title="Export to PDF">
+                                            <i class="fa fa-file-pdf-o"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm grid-excel"
+                                                title="Export to Excel">
+                                            <i class="fa fa-file-excel-o"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="grid-users-{{ cu.company.slug }}"
+                                     class="grid-multiline-headers"
+                                     data-tools="grid-{{ cu.company.slug }}-users-tools"
+                                     data-api-url="
+                                             {{ api_url }}{{ cu.company.slug }}/permissions/">
+                                </div>
+                            </div>
+                            <div class="tab-pane tab-content segment-tab"
+                                 id="tab_{{ cu.company.slug }}_groups">
+                                <br>
+
+                                <div class="box-tools grid-{{ cu.company.slug }}-groups-tools">
+                                    {% if cu.can_change_permissions %}
+                                        <!--
+                                        <button class="btn btn-primary btn-bordered btn-sm grid-add"
+                                                title="Add a new group">
+                                            <i class="fa fa-plus"></i>&nbsp;
+                                            Group
+                                        </button>
+                                        -->
+                                    {% endif %}
+                                    <button class="btn btn-primary btn-sm grid-cancel"
+                                            title="Cancel changes"
+                                            disabled aria-disabled="true">
+                                        <i class="fa fa-undo"></i>
+                                    </button>
+                                    <div class="btn-group" role="group" aria-label="...">
+                                        <button class="btn btn-primary btn-sm grid-pdf"
+                                                title="Export to PDF">
+                                            <i class="fa fa-file-pdf-o"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm grid-excel"
+                                                title="Export to Excel">
+                                            <i class="fa fa-file-excel-o"></i>
+                                        </button>
+                                    </div>
+
+                                </div>
+                                <div id="grid-groups-{{ cu.company.slug }}"
+                                     class="grid-multiline-headers"
+                                     data-tools="grid-{{ cu.company.slug }}-groups-tools"
+                                     data-api-url="
+                                             {{ api_url }}{{ cu.company.slug }}/groups/">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">No Manageable Companies</h3>
+                    </div>
+                    <div class="box-body">
+                        You do not have permission to manage users on any of your companies. If you
+                        think this is a mistake please contact the account owner.
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" data-api-url=""
+         data-company-slug=""
+         aria-labelledby="addUserModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addUserModalLabel">Add User</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" method="post">
+                        {% csrf_token %}
+
+                        <div id="div_id_user" class="form-group">
+                            <label for="id_user"
+                                   class="control-label col-lg-2 requiredField">
+                                Email<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-8">
+                                <input class="emailinput form-control"
+                                       id="id_user" name="user"
+                                       required="required"
+                                       type="email"/>
+                            </div>
+                        </div>
+                        <div id="div_id_group" class="form-group">
+                            <label for="id_group"
+                                   class="control-label col-lg-2 requiredField">
+                                Group<span class="asteriskField">*</span>
+                            </label>
+
+                            <div class="controls col-lg-8">
+                                <input required data-text-field="name" id="id_group" name="group"
+                                       data-value-field="slug">
+                            </div>
+                        </div>
+                        <div id="div_id_title" class="form-group">
+                            <label for="id_title" class="control-label col-lg-2">
+                                Title
+                            </label>
+
+                            <div class="controls col-lg-8">
+                                <input class="textinput textInput form-control" id="id_title"
+                                       maxlength="75" name="title" type="text"/>
+                            </div>
+                        </div>
+                        <div id="div_id_permitted_segments_list" class="form-group">
+                            <label for="id_permitted_segments_list"
+                                   class="control-label col-lg-2">
+                                Permitted segments list
+                            </label>
+
+                            <div class="controls col-lg-8">
+                                <textarea class="textarea form-control"
+                                          cols="40"
+                                          id="id_permitted_segments_list"
+                                          name="permitted_segments_list"
+                                          rows="10"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default btn-bordered"
+                            data-dismiss="modal">Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-bordered">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

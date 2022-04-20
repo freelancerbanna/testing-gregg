@@ -1,0 +1,15 @@
+{% load icmo_utils %}
+<select class="dashboard-selector input input-sm">
+    <option {% if dashboard == 'cmo' %}selected{% endif %}
+            value="{% blank_kwargs_url 'dashboards' %}">
+        CMO Overview
+    </option>
+    <option {% if dashboard == 'budget' %}selected{% endif %}
+            value="{% blank_kwargs_url 'dashboards_budget' %}">
+        CMO Budget
+    </option>
+    <option {% if dashboard == 'performance' %}selected{% endif %}
+            value="{% blank_kwargs_url 'dashboards_performance' %}">
+        CMO Performance
+    </option>
+</select>

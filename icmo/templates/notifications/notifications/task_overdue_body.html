@@ -1,0 +1,13 @@
+{% extends 'icmo_users/email/base.html' %}
+{% load static %}
+{% block title %}Task Past Due{% endblock %}
+{% block subject %}Task Past Due{% endblock %}
+{% block email_type %}warning{% endblock %}
+{% block content %}
+    <tr>
+        <td class="content-block">
+            The {{ instance.company }} task <b>{{ instance.segment }}: {{ instance.name }}</b>
+              is now past due.
+        </td>
+    </tr>
+{% endblock %}

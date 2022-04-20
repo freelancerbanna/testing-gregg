@@ -1,0 +1,1 @@
+{% load i18n %}{{ user.first_name }} {{ user.last_name }} {% trans 'would like to introduce you to intelligentRevenue' %}

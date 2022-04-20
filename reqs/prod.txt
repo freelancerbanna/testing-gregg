@@ -1,0 +1,4 @@
+-r common.txt
+waitress==1.0.1
+dj-database-url==0.4.1
+django-postgrespool==0.3.0

@@ -1,0 +1,172 @@
+{% extends 'base_standalone.html' %}
+{% load staticfiles crispy_forms_tags %}
+{% block title %}Sign Up{% endblock %}
+{% block compressed_css %}
+    {{ block.super }}
+    <link href="{% static 'iCheck/skins/square/red.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'vendor/signature-pad/assets/jquery.signaturepad.css' %}"
+          rel="stylesheet">
+    <link href="{% static 'css/stripe_form.css' %}" rel="stylesheet">
+{% endblock %}
+{% block compressed_js %}
+    {{ block.super }}
+    <script src="{% static 'twitter-bootstrap-wizard/jquery.bootstrap.wizard.min.js' %}"
+            type="text/javascript"></script>
+    <!--[if lt IE 9]>
+	<script src="{% static 'vendor/signature-pad/assets/flashcanvas.js' %}" type="text/javascript"></script>
+	<![endif]-->
+    <script src="{% static 'vendor/signature-pad/jquery.signaturepad.min.js' %}"
+            type="text/javascript"></script>
+    <script src="{% static 'vendor/signature-pad/assets/json2.min.js' %}"
+            type="text/javascript"></script>
+    <script type="text/javascript"
+            src="{% static 'jquery.payment/lib/jquery.payment.js' %}"></script>
+
+    <script src="{% static 'phoenix/jquery.phoenix.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'iCheck/icheck.min.js' %}" type="text/javascript"></script>
+
+    <script src="{% static 'js/signup_form.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/stripe_form.js' %}" type="text/javascript"></script>
+{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script>
+        $(function () {
+            SignupJS.init("#signupForm");
+            StripeForm.init($signupForm, '{{ stripe_public_key }}');
+            $('input').iCheck({
+                checkboxClass: 'icheckbox_square-red',
+                radioClass: 'iradio_square-red',
+                increaseArea: '20%' // optional
+            });
+        });
+    </script>
+{% endblock %}
+{% block external_js %}
+    <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+{% endblock %}
+{% block body_content %}
+    <div class="row inset">
+        <div class="col-md-8 col-md-offset-2">
+            <h1>
+                <a href="/">
+                    <img class='responsive'
+                         height="25px"
+                         src="{% static 'img/icmo-logo-443x50.png' %}"
+                         alt="intelligentRevenue logo" title="intelligentRevenue"/>
+                </a>
+            </h1>
+
+            <div class="box box-solid">
+                <form id="signupForm" method="post" class="form-horizontal"
+                      action="{% url 'signup_create_account' %}"
+                      data-store-form-url="{% url 'ajax_signup_store_form' %}"
+                      data-summary-url="{% url 'billing:ajax_update_payment_summary' %}">
+
+                    <input type="hidden" name="_last_tab" id="_last_tab">
+
+                    <div class="alert alert-success" id='welcome_back_alert' role="alert"
+                         style="display:none">
+                        Welcome back! Pick up where you left off.
+                        <button type="button" class="close" data-dismiss="alert"
+                                aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="box-header with-border no-padding">
+                        <ul class="nav">
+                            <li class="active">
+                                <a href="#welcome-tab" data-toggle="tab">Welcome</a>
+                            </li>
+                            <li>
+                                <a href="#solution-tab" data-toggle="tab">Solution</a>
+                            </li>
+                            <li>
+                                <a href="#contact-tab" data-toggle="tab">Contact</a>
+                            </li>
+                            <li>
+                                <a href="#company-tab" data-toggle="tab">Company</a>
+                            </li>
+                            <li>
+                                <a href="#order-tab" data-toggle="tab">Order</a>
+                            </li>
+                            <li>
+                                <a href="#payment-tab" data-toggle="tab">Payment</a>
+                            </li>
+                            <li>
+                                <a href="#">Finish</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="box-body">
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="welcome-tab">
+                                <h3>Welcome to the signup wizard.</h3>
+                                You will be guided through a series of steps to create your
+                                company account. The process will take five minutes to complete.
+                            </div>
+                            <div class="tab-pane" id="solution-tab">
+                                <h3>Please select a solution for your company:</h3>
+                                {% include 'icmo_users/includes/plan_chooser.html' %}
+                                {% crispy subscription_plan_form %}
+                            </div>
+                            <div class="tab-pane" id="contact-tab">
+                                <h3>Please create your user information:</h3>
+                                {% crispy contact_form %}
+                            </div>
+                            <div class="tab-pane" id="company-tab">
+                                <h3>Please create your company account:</h3>
+
+                                {% crispy company_form %}
+                            </div>
+                            <div class="tab-pane" id="order-tab">
+                                <h3>Please Review & Sign this Order Form
+                                    <small><br>You will receive a countersigned copy of this order
+                                        form as a pdf by email.
+                                    </small>
+                                </h3>
+
+                                <div class='well'>
+                                    <h4 class="text-bold">intelligentRevenue Order Form</h4>
+                                    <hr>
+                                    {% include 'billing/includes/payment_summary.html' with loading_bar=True %}
+                                    <hr>
+                                    {% include contract_template_name %}
+                                    <hr>
+                                    {% crispy contract_form %}
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="payment-tab">
+                                <h3>Please review your order and select a payment method.</h3>
+
+                                <div class="row">
+                                    <div class="col-sm-8 col-sm-push-2">
+                                        {% include 'billing/includes/payment_summary.html' with loading_bar=True coupon_form=None %}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-8 col-sm-push-2">
+                                        {% include 'billing/stripe_form.html' %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-8 col-sm-push-2">
+                                        {% include 'billing/paypal_form.html' %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-bordered wizard-prev">
+                            Previous
+                        </button>
+                        <button type="button"
+                                class="btn btn-primary btn-bordered wizard-next pull-right">
+                            Next
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

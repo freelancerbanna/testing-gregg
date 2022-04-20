@@ -1,0 +1,85 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load crispy_forms_tags %}
+{% block title %}Account Settings{% endblock %}
+{% block page_title %}Account Settings{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">User Profile
+                        <a role="button" href="?edit=user" class="pull-right btn btn-primary">
+                            <i class="fa fa-pencil-square-o"></i>
+                        </a>
+                    </h3>
+                </div>
+                <div class="box-body">
+                    {% if user_form %}
+                        {% crispy user_form %}
+                    {% else %}
+                        <p><b>Name</b><br>{{ user.get_full_name }}</p>
+                        <p><b>Email</b><br>{{ user.email }}</p>
+                        <p><b>Password</b><br><a href="{% url 'password_change' %}">Change your
+                            password</a></p>
+                        <p><b>Phone Number</b><br>{{ user.phone_number }}</p>
+                        <p><b>Title</b><br>{{ user.title }}</p>
+                        <p><b>Employer</b><br>{{ user.employer }}</p>
+                        <p><b>Timezone</b><br>{{ user.timezone }}</p>
+                        <p><b>Date Joined</b><br>{{ user.date_joined }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% if billing %}
+            <div class="col-sm-6">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Billing Account
+                            <a role="button" href="#"
+                               onclick='bootbox.alert("To modify your subscription please contact us at 1-800-735-6520");'
+                               class="pull-right btn btn-primary btn-bordered">
+                                Change Subscription
+                            </a>
+                        </h3>
+                    </div>
+                    <div class="box-body">
+                        <p><b>Account Number</b><br>{{ billing.account_number }}</p>
+
+                        <p><b>Owner</b><br>{{ billing.owner }}</p>
+
+                        <p><b>Billing Company</b><br>{{ billing.billing_company }}</p>
+
+                        <p><b>Active Subscription</b><br>{{ billing.active_subscription }}</p>
+
+                        <p><b>Max Number of Published
+                            Companies</b><br>{{ billing.limit_max_companies }}</p>
+
+                        <p><b>Current Contract</b><br>
+                            {% if billing.active_subscription %}
+                                {% with contract=billing.active_subscription.active_contract %}
+                                    <a href="{% url 'billing:contract_view' slug=contract.slug %}?pdf=1"
+                                       target="_blank">
+                                        <i class="fa fa-file-pdf-o"></i> Billing Contract
+                                        v{{ contract.version }} {{ contract.date }} PDF
+                                    </a>
+                                {% endwith %}
+                                </p>
+                            {% endif %}
+                        </p>
+                        <p><b>Other Contracts</b><br>
+                            {% for contract in billing.contract_set.all %}
+                                <a href="{% url 'billing:contract_view' slug=contract.slug %}?pdf=1"
+                                   target="_blank">
+                                    <i class="fa fa-file-pdf-o"></i> Billing Contract
+                                    v{{ contract.version }} {{ contract.date }} PDF
+                                </a>
+                                </p>
+                            {% endfor %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

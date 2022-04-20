@@ -1,0 +1,27 @@
+<script type="text/x-kendo-template" id="summaryNameTemplate">
+    <div class="budget_cell">
+        <span class="budget-category">#: name #</span>
+
+        <div class="subrow">
+            <span class="budget_plan">Plan<br></span>
+            <span class="budget_actual">Actual</span>
+            <span class="budget_variance"><br>Variance</span>
+        </div>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="summaryValueTemplate">
+
+    <div class="budget_value_cell_spacer">&nbsp;</div>
+    <div class="budget_cell budget_value_cell">
+        <span class="budget_value budget_plan">#: plan #</span>
+        <span class="budget_value budget_actual">#: actual #</span>
+        <span class="budget_value budget_variance # if(variance < 0){ # text-red # } #">#: variance #</span>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="summaryFooterTemplate">
+    <div>
+        <span class="budget_value budget_plan">#: plan #</span>
+        <span class="budget_value budget_actual">#: actual #</span>
+        <span class="budget_value budget_variance # if(variance < 0){ # text-red # } #">#: variance #</span>
+    </div>
+</script>

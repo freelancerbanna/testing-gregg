@@ -1,0 +1,444 @@
+{% extends 'base.html' %}
+{% load static menu crispy_forms_tags cloudinary %}
+{% load icmo_utils %}
+{% block compressed_js %}{% endblock %}
+{% block page_js %}
+    {% if WEBSOCKET_URI %}
+        <script type="application/javascript">
+            ICMO.wsURL = '{{ WEBSOCKET_URI }}';
+            ICMO.wsHeartbeat ={{ WS4REDIS_HEARTBEAT }};
+        </script>
+    {% endif %}
+    {% if selected_company %}
+        <script>
+            ICMO.core.fiscal_year_start ={{selected_company.fiscal_year_start}};
+            ICMO.core.fiscal_months = [
+                {% for month in selected_company.fiscal_months_by_name %}
+                    '{{ month }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+        </script>
+    {% endif %}
+    {% cloudinary_includes %}
+    {% cloudinary_js_config %}
+    {% if can_change %}
+        <script type="text/javascript">
+            ICMO.core.hasChangePermission = true;
+        </script>
+    {% endif %}
+{% endblock %}
+{% block body_content %}
+    <header class="main-header">
+        <div class="container-fluid logo-header">
+            <a href="{% url 'start_redirect' %}" class="brand">
+                <img src="{% static 'img/icmo-logo.png' %}" height="40"/>
+            </a>
+            {% if selected_company %}
+                <a class="header-company-name pull-right"
+                   href="{% blank_kwargs_url 'companies_list' %}">
+                    {% if selected_company.logo_thumbnail %}
+                        <img src='{{ selected_company.logo_large }}' height="30"
+                             alt="{{ selected_company.name }}"
+                             title="{{ selected_company.name }}"/>
+                    {% else %}
+                        {{ selected_company.name }}
+                    {% endif %}
+                </a>
+            {% endif %}
+        </div>
+        <nav class="navbar navbar-static-top">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#navbar-collapse">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="{% if app_name == 'start' %}active{% endif %}"
+                        id="top-menu-start">
+                        <a href="{% blank_kwargs_url 'start' %}">
+                            <span>Start</span>
+                        </a>
+                    </li>
+                    {% if company_user.group.revenue_plans != 'none' %}
+                        <li class="{% if app_name == 'revenue_plans' %}active{% endif %} plans-menu"
+                            id="top-menu-revenue_plans">
+                            <a id='revenue_plans_button'
+                               href="{% blank_kwargs_url 'revenue_plans_list' %}">
+                                <span>Revenue Plan</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if company_user.group.program_mix != 'none' %}
+                        <li class="{% if app_name == 'program_mix' %}active{% endif %}"
+                            id="top-menu-program_mix">
+                            <a href="{% blank_kwargs_url 'program_mix' %}">
+                                <span>Marketing Mix</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if company_user.group.budgets != 'none' %}
+                        <li class="{% if app_name == 'budgets' %}active{% endif %}"
+                            id="top-menu-budget">
+                            <a href="{% blank_kwargs_url 'budgets' %}">
+                                <span>Budget</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="dropdown {% if app_name == 'resources_gantt' or app_name == 'resources_scheduler' or app_name == 'task_boards' %}active{% endif %}"
+                        id="top-menu-resources">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                           aria-haspopup="true" aria-expanded="false"><span>Resources</span><span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            {% if company_user.group.resources != 'none' %}
+                                <li class="{% if app_name == 'resources' %}active{% endif %}"
+                                    id="top-menu-resources-gantt">
+                                    <a href="{% blank_kwargs_url 'resources_gantt' %}">
+                                        <span>Team Schedule</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if company_user.group.resources != 'none' %}
+                                <li class="{% if app_name == 'task_boards' %}active{% endif %}"
+                                    id="top-menu-resources-task-boards">
+                                    <a href="{% blank_kwargs_url 'list_task_boards' %}">
+                                        <span>Task Boards</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <!--
+                            {% if company_user.group.timeline != 'none' %}
+                                <li class="{% if app_name == 'timeline' %}active{% endif %}"
+                                    id="top-menu-resources-scheduler">
+                                    <a href="
+                                {% blank_kwargs_url 'resources_scheduler' %}">
+                                        <span>My Timeline</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            -->
+                        </ul>
+                    </li>
+
+                    {% if company_user.group.performance != 'none' %}
+                        <li class="{% if app_name == 'performance' %}active{% endif %}"
+                            id="top-menu-performance">
+                            <a href="{% blank_kwargs_url 'performance' %}">
+                                <span>Performance</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if company_user.group.dashboards != 'none' %}
+                        <li class="{% if app_name == 'dashboards' %}active{% endif %}"
+                            id="top-menu-dashboard">
+                            <a href="{% blank_kwargs_url 'dashboards' %}">
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if company_user.group.dashboards != 'none' %}
+                        <li class="{% if app_name == 'reports' %}active{% endif %}"
+                            id="top-menu-reports">
+                            <a href="{% blank_kwargs_url 'reports_index' %}">
+                                <span>Reports</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+            <!-- Navbar Right Menu -->
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    <!-- User Account Menu -->
+                    <li class="dropdown user user-menu {% if app_name == 'user' %}active{% endif %}">
+                        <!-- Menu Toggle Button -->
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                            <span class="visible-xs visible-sm"><i class="fa fa-user"></i></span>
+                            <span class="hidden-xs hidden-sm">{{ user.get_full_name }}</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <!-- The user image in the menu -->
+                            <li class="user-header">
+                                <p>
+                                    {{ user.get_full_name }}
+                                    {% if user.title %}
+                                        <br>
+                                        <small>{{ user.title }}</small>
+                                    {% endif %}
+                                    {% if user.employer %}
+                                        <br><b>{{ user.employer }}</b>
+                                    {% endif %}
+                                </p>
+                            </li>
+                            <!-- Menu Body -->
+                            <li class="user-body">
+                                <div class="col-xs-6 text-center">
+                                    <a href="{% blank_kwargs_url 'companies_list' %}">Companies</a>
+                                </div>
+                                <div class="col-xs-6 text-center">
+                                    <a href="{% blank_kwargs_url 'recycle_bin' %}">Recycle
+                                        Bin</a>
+                                </div>
+                            </li>
+                            <li class="user-body">
+                                <div class="col-xs-6 text-center">
+                                    <a href="{% blank_kwargs_url 'permissions' %}">Permissions</a>
+                                </div>
+                                <div class="col-xs-6 text-center">
+                                    <a href="{% blank_kwargs_url 'integrations' %}">Integrations</a>
+                                </div>
+                            </li>
+                            <li class="user-body">
+                                <div class="col-xs-6 text-center">
+                                    <a href="{% blank_kwargs_url 'notification_subscriptions' %}">Notifications</a>
+                                </div>
+                                <div class="col-xs-6 text-center">
+                                </div>
+                            </li>
+                            <li class="user-body">
+
+                                <div class="col-xs-6 text-center">
+                                    <a href="{% blank_kwargs_url 'send_a_suggestion' %}">Suggestions</a>
+                                </div>
+                                <div class="col-xs-6 text-center">
+                                    <a href="{% blank_kwargs_url 'help' %}">Help</a>
+                                </div>
+                            </li>
+                            <!-- Menu Footer-->
+                            <li class="user-footer">
+                                <div class="pull-left">
+                                    <a href="{% blank_kwargs_url 'user_details' %}"
+                                       class="btn btn-default btn-flat">Account</a>
+                                </div>
+                                <div class="pull-right">
+                                    <a href="{% url 'logout' %}"
+                                       class="btn btn-default btn-flat">Sign out</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li id="cube-nav">
+                        <a href="#" data-toggle="control-sidebar">
+                            <img src="{% static 'img/cube-icon.png' %}" width="18"></a>
+                    </li>
+                </ul>
+            </div>
+
+        </nav>
+    </header>
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1>
+                {% block page_title %}{% endblock %}
+                <small>{% block page_subtitle %}{% endblock %}</small>
+            </h1>
+        </section>
+        <section class="content">
+            {% comment %}Kendo Notification holder {% endcomment %}
+            <span id="notification"></span>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            {% if not hide_plan_bar %}
+                <div class="row plan-selector">
+                    <div class="col-sm-12">
+                        <div class="box">
+                            <div class="box-header">
+                                <a href="{% blank_kwargs_url 'revenue_plans_list' %}">
+                                    <label class="plan-{{ selected_plan.plan_type }}">Selected {{ selected_plan.plan_type|title }}
+                                        Plan</label>
+                                    <span class="selected-plan-static">{{ selected_plan.name|default:"No plan selected" }}</span>
+                                </a>
+
+                                <div class="pull-right">
+                                    {% block toolbar_tools %}{% endblock %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% block content %}
+
+            {% endblock %}
+        </section>
+    </div>
+    <aside class="control-sidebar control-sidebar-light">
+        <!--
+        <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+            <li class="active"><a href="#control-sidebar-theme-demo-options-tab" data-toggle="tab">
+                Quick
+            </a></li>
+            <li><a href="#control-sidebar-home-tab" data-toggle="tab">Status</a></li>
+            <li><a href="#control-sidebar-settings-tab" data-toggle="tab">Help</a></li>
+        </ul>
+        -->
+        <div class="tab-content">
+            <!--
+            <div class="tab-pane" id="control-sidebar-home-tab">
+                <h3 class="control-sidebar-heading">Recent Activity</h3>
+                <ul class="control-sidebar-menu">
+                    <li>
+                        <a href="javascript::;">
+                            <i class="menu-icon fa fa-birthday-cake bg-red"></i>
+
+                            <div class="menu-info">
+                                <h4 class="control-sidebar-subheading">Langdon's Birthday</h4>
+
+                                <p>Will be 23 on April 24th</p>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript::;">
+                            <i class="menu-icon fa fa-user bg-yellow"></i>
+
+                            <div class="menu-info">
+                                <h4 class="control-sidebar-subheading">Frodo Updated His
+                                    Profile</h4>
+
+                                <p>New phone +1(800)555-1234</p>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript::;">
+                            <i class="menu-icon fa fa-envelope-o bg-light-blue"></i>
+
+                            <div class="menu-info">
+                                <h4 class="control-sidebar-subheading">Nora Joined Mailing
+                                    List</h4>
+
+                                <p>nora@example.com</p>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript::;">
+                            <i class="menu-icon fa fa-file-code-o bg-green"></i>
+
+                            <div class="menu-info">
+                                <h4 class="control-sidebar-subheading">Cron Job 254 Executed</h4>
+
+                                <p>Execution time 5 seconds</p>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+                <h3 class="control-sidebar-heading">Tasks Progress</h3>
+                <ul class="control-sidebar-menu">
+                    <li>
+                        <a href="javascript::;">
+                            <h4 class="control-sidebar-subheading">
+                                Custom Template Design
+                                <span class="label label-danger pull-right">70%</span>
+                            </h4>
+
+                            <div class="progress progress-xxs">
+                                <div class="progress-bar progress-bar-danger"
+                                     style="width: 70%"></div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript::;">
+                            <h4 class="control-sidebar-subheading">
+                                Update Resume
+                                <span class="label label-success pull-right">95%</span>
+                            </h4>
+
+                            <div class="progress progress-xxs">
+                                <div class="progress-bar progress-bar-success"
+                                     style="width: 95%"></div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript::;">
+                            <h4 class="control-sidebar-subheading">
+                                Laravel Integration
+                                <span class="label label-warning pull-right">50%</span>
+                            </h4>
+
+                            <div class="progress progress-xxs">
+                                <div class="progress-bar progress-bar-warning"
+                                     style="width: 50%"></div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript::;">
+                            <h4 class="control-sidebar-subheading">
+                                Back End Framework
+                                <span class="label label-primary pull-right">68%</span>
+                            </h4>
+
+                            <div class="progress progress-xxs">
+                                <div class="progress-bar progress-bar-primary"
+                                     style="width: 68%"></div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            -->
+            <div id="control-sidebar-theme-demo-options-tab" class="tab-pane active">
+                <div>
+                    <h4 class="control-sidebar-heading">Quick Actions</h4>
+
+                    <!--
+                <p>
+                    <a class="btn btn-primary">
+                        <i class="fa fa-user"></i> &nbsp; Add User
+                    </a>
+                </p>
+                -->
+                    <p>
+
+                        <a class="btn btn-primary"
+                           href="{% blank_kwargs_url 'resources_gantt' %}">
+                            <i class="fa fa-calendar-plus-o"></i> &nbsp; Add Task
+                        </a>
+                    </p>
+
+                    <p>
+                        <a class="btn btn-primary"
+                           href="{% blank_kwargs_url 'budgets' %}">
+                            <i class="fa fa-money"></i> &nbsp; Add Budget Item
+                        </a>
+                    </p>
+
+                    <p>
+                        <a class="btn btn-primary"
+                           href="{% blank_kwargs_url 'help' %}">
+                            <i class="fa fa-question-circle"></i> &nbsp; Help
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Settings tab content -->
+            <div class="tab-pane" id="control-sidebar-settings-tab">
+                <h3 class="control-sidebar-heading">Help</h3>
+                <span class="control-sidebar-subheading">About this page</span>
+
+                <p>
+                    This is context sensitive help information.
+                </p>
+
+                <p>
+                    <button class="btn btn-primary btn-bordered">Show Tour</button>
+                </p>
+
+            </div>
+            <!-- /.tab-pane -->
+        </div>
+    </aside>
+    <div class="control-sidebar-bg"></div>
+{% endblock %}

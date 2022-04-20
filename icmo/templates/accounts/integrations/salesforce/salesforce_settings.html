@@ -1,0 +1,26 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags humanize %}
+{% block title %}Salesforce Integration Settings{% endblock %}
+{% block page_title %}Salesforce Integration Settings{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Set up your Salesforce
+                        Integration</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            {% crispy form %}
+                        </div>
+                        <div class="col-sm-4 small">
+                            {% include 'accounts/integrations/salesforce/includes/salesforce_settings.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

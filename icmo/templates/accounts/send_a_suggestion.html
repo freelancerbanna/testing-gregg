@@ -1,0 +1,25 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags %}
+{% load blank_kwargs_url from icmo_utils %}
+
+{% block title %}Send a Suggestion{% endblock %}
+{% block page_title %}Send a Suggestion{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">How can we improve?</h3>
+                    <br><br><p>We are committed to providing the tools
+                        you need to succeed.  If there something we should know, please
+                    <a href="{% blank_kwargs_url  'help' %}">get in touch with our support team</a>, or for less urgent requests leave
+                    us a suggestion using the form below.</p>
+                </div>
+                <div class="box-body">
+
+                    {% crispy form %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

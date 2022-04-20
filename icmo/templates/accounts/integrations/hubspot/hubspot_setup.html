@@ -1,0 +1,284 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags %}
+{% load blank_kwargs_url from icmo_utils %}
+
+{% block title %}Hubspot Integration{% endblock %}
+{% block page_title %}Hubspot Integration{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script>
+        function alertDisconnectHubSpotSubmit() {
+            bootbox.confirm("Disconnecting from Hubspot will remove ALL Hubspot data from iCMO, including all " +
+                    "campaigns imported from Hubspot.  Are you sure you want to continue?",
+                    function () {
+                        $('#disconnectHubSpotForm').submit();
+                    }
+            )
+        }
+        function alertDisconnectRevenuePlanSubmit() {
+            bootbox.confirm("Disconnecting this revenue plan will remove all campaigns imported from HubSpot into this revenue plan.  Other HubSpot data will not be affected." +
+                    "Do you want to continue?",
+                    function () {
+                        $('#disconnectRevenuePlanForm').submit();
+                    }
+            )
+        }
+
+    </script>
+{% endblock %}
+{% block content %}
+    {% if hubspot.connected %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">HubSpot Connection Status
+                            <form id='disconnectHubSpotForm' method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="disconnect_hubspot">
+                            </form>
+                            <a
+                                    class="btn btn-bordered btn-danger pull-right"
+                                    onclick="alertDisconnectHubSpotSubmit();">Disconnect from
+                                Hubspot</a></h3>
+                    </div>
+                    <div class="box-body">
+                        <p>iCMO queries your HubSpot account in order to automatically create iCMO
+                            Campaigns, drawing in actual performance data from Hubspot. Mapping
+                            HubSpot data to iCMO involves four steps:
+                        </p>
+                        <ol>
+                            <li>Connect to Hubspot <i class="fa fa-check"></i></li>
+                            <li>Wait for iCMO to sync with HubSpot {% if hubspot.last_sync %}
+                                <i class="fa fa-check"></i>{% endif %}</li>
+                            <li>Connect one or more Revenue Plans {% if hubspot.connected_plans.count %}
+                                <i class="fa fa-check"></i>{% endif %}</li>
+                            <li>Map HubSpot contacts to iCMO Segments & Programs</li>
+                        </ol>
+                        <hr>
+                        <h4>Hubspot Data Imported</h4>
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Contacts</th>
+                                <th>Companies</th>
+                                <th>Campaigns Identified</th>
+                                <th>Deals</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    {{ good_contacts_count.1 }}
+                                    imported, {{ good_contacts_count.0 }} assignable.
+                                    {% if good_contacts_count.0 != good_contacts_count.1 %}
+                                        <br>
+                                        <small>
+                                            Only {{ good_campaign_name_count.0 }}/{{ good_campaign_name_count.1 }}
+                                            contacts have campaigns.
+                                            Contacts without campaigns are unassignable.
+                                        </small>
+                                    {% endif %}
+
+                                    <br>
+
+                                </td>
+                                <td>{{ object.hs_companies.count }}</td>
+                                <td>{{ campaigns_count }}</td>
+                                <td>{{ deals_count }}</td>
+                            </tr>
+                        </table>
+                        <hr>
+                        <h4>Hubspot Data Statistics</h4>
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Subscribers</th>
+                                <th>Leads</th>
+                                <th>MQLs</th>
+                                <th>SQLs</th>
+                                <th>Opportunities</th>
+                                <th>Customers</th>
+                                <th>Sales (Closedwon Deals)</th>
+                            </tr>
+                            <tr>
+                                <td>{{ events_subscriber_count }}</td>
+                                <td>{{ events_lead_count }}</td>
+                                <td>{{ events_mql_count }}</td>
+                                <td>{{ events_sql_count }}</td>
+                                <td>{{ events_opportunity_count }}</td>
+                                <td>{{ events_customer_count }}</td>
+                                <td>{{ sales_count }}</td>
+                            </tr>
+                        </table>
+                        <small>
+                            <b>Notes:</b><br>
+                            <ul>
+                                <li>A HubSpot contact can go through a lifecycle stage multiple
+                                    times, so the total may be greater than the number of imported
+                                    contacts.
+                                </li>
+                                <li>iCMO will combine the Lead and MQL stages into MQL, and the SQL
+                                    and Opportunity into SQL
+                                </li>
+                                <li>In order to provide clean funnels, iCMO will tally implied
+                                    lifecycle stages where appropriate. For example if in HubSpot a
+                                    contact only has the stages Subscriber and Customer, iCMO will
+                                    infer
+                                    that they became an MQL and SQL in the same month they became a
+                                    customer.
+                                </li>
+                            </ul>
+                            <p>For more information about these lifecycle stages please see the <a
+                                href="http://knowledge.hubspot.com/contacts-user-guide-v2/how-to-use-lifecycle-stages"
+                                target="_blank">HubSpot documentation</a></p>
+                        </small>
+                    </div>
+                    <div class="box-footer small">
+                        <p>
+                            iCMO is importing your HubSpot contacts and refreshing automatically
+                            every 24 hours.
+                            {% if hubspot.last_sync %}
+                                The last successful connection happened on: {{ hubspot.last_sync }}
+                            {% else %}
+                                iCMO has not yet synced with hubspot or is in the process of
+                                syncing.  Please check back later.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Connected Plans</h3>
+                    </div>
+                    <div class="box-body">
+                        <p>
+                            iCMO only imports HubSpot performance data into plans that have been
+                            "connected".
+                            Only published revenue plans can be connected to HubSpot.
+                        </p>
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Revenue Plan</th>
+                                <th>Plan Year</th>
+                                <th>Map Contacts to Segments</th>
+                                <th>Map Campaigns to Programs</th>
+                                <th>Disconnect</th>
+                            </tr>
+                            {% for hs_plan in connected_plans %}
+                                <tr>
+                                    <td>
+                                        {{ hs_plan.revenue_plan.name }}<br>
+                                        {% if hs_plan.revenue_plan.fully_imported %}
+                                            <span class="label label-success">Fully Imported</span>
+                                        {% else %}
+                                            <span class="label label-warning">Needs Attention</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ hs_plan.revenue_plan.plan_year }}</td>
+                                    <td>
+                                        <a href="{% blank_kwargs_url 'hubspot_map_segments' segments_map_revenue_plan_slug=hs_plan.revenue_plan.slug %}">Map
+                                            Segments</a>
+                                        <br>
+                                        <small>
+                                            Mapped: {{ hs_plan.mapped_segments_count.0 }}/{{ hs_plan.mapped_segments_count.1 }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% blank_kwargs_url 'hubspot_map_campaigns' campaigns_plan_slug=hs_plan.revenue_plan.slug %}">Map
+                                            Campaigns</a>
+                                        <br>
+                                        <small>
+                                            Mapped: {{ hs_plan.mapped_campaigns_count.0 }}/{{ hs_plan.mapped_campaigns_count.1 }}</small>
+                                    </td>
+                                    <td>
+                                        <form id='disconnectRevenuePlanForm' method="POST">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action"
+                                                   value="disconnect_revenue_plan">
+                                            <input type="hidden" name="revenue_plan_slug"
+                                                   value="{{ hs_plan.revenue_plan.slug }}">
+                                        </form>
+                                        <a onclick="alertDisconnectRevenuePlanSubmit();"
+                                           class="btn btn-bordered btn-primary">
+                                            Disconnect
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3">
+                                        You have not connected any revenue plans.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Unconnected Plans</h3>
+                    </div>
+                    <div class="box-body">
+                        <p>
+                            iCMO only imports HubSpot performance data into plans that have been
+                            "connected".
+                            Only revenue plans that you have write access to can be connected to
+                            HubSpot.
+                        </p>
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Revenue Plan</th>
+                                <th>Plan Year</th>
+                                <th>Connected to Hubspot</th>
+                            </tr>
+                            {% for plan in unconnected_plans %}
+                                <tr>
+                                    <td>{{ plan.name }}</td>
+                                    <td>{{ plan.plan_year }}</td>
+                                    <td>
+                                        <a href="?connect_plan={{ plan.slug }}"
+                                           class="btn btn-bordered btn-primary">
+                                            Connect
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3">
+                                        You have not created or do not have access to
+                                        any revenue plans.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Set up your Hubspot Integration</h3>
+                </div>
+                <div class="box-body">
+                    <p>
+                        intelligentRevenue can import campaign performance data from Hubspot.
+                        Enabling this integration will not make any changes to your Hubspot data.
+                        To
+                        enable this integration enter the hub ID you'd like to connect to and
+                        click the authorize button below.
+                    </p>
+                    <hr>
+                    {% crispy form %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

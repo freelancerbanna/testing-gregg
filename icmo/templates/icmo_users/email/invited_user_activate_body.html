@@ -1,0 +1,21 @@
+{% extends 'icmo_users/email/base.html' %}
+{% load static %}
+{% block title %}Activate your intelligentRevenue Account{% endblock %}
+{% block subject %}Activate your intelligentRevenue Account{% endblock %}
+{% block email_type %}warning{% endblock %}
+{% block content %}
+    <tr>
+        <td class="content-block">
+            You have been invited to collaborate on {{ company.name }} by {{ inviter.full_name }}.  
+            To get started, please activate your account.
+        </td>
+    </tr>
+    <tr>
+        <td class="content-block">
+            <a class='btn-primary'
+               href="https://{{ request.get_host }}{% url 'activate_invited_user' token=invited_user.activation_token %}">
+                Activate my Account
+            </a>
+        </td>
+    </tr>
+{% endblock %}

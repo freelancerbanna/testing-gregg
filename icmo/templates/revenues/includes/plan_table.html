@@ -1,0 +1,48 @@
+<table class="table grid">
+    <colgroup>
+        <col class="col-sm-4">
+        <col/>
+        <col/>
+        <col/>
+        <col/>
+        <col/>
+        <col class="col-sm-3"/>
+    </colgroup>
+    <thead>
+    <tr>
+        <th data-field="Name">Name</th>
+        <th data-field="Year">Year</th>
+        <th data-field="Type">Type</th>
+        <th data-field="Created">Created</th>
+        <th data-field="Updated">Updated</th>
+        <th data-field="Owner">Owner</th>
+        <th data-field="Tools" data-sortable="false">Tools</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for plan in plans %}
+        <tr {% if plan == selected_plan %}class="active"{% endif %}>
+            <td>
+                <div class="plan_type_icon">
+                    <i class="fa fa-{% if plan.get_plan_type_display == 'Draft' %}star-o{% elif plan.get_plan_type_display == 'Published' %}star{% else %}archive{% endif %}"></i>
+                </div>
+                <div class="plan_name">
+                    <a href='{% url 'switch_plan' %}?plan={{ plan.slug }}'
+                       title="Select this plan">{{ plan.name }}</a>
+                    <br>{{ plan.segments.all|join:", " }}
+                </div>
+
+            </td>
+            <td>{{ plan.plan_year }}</td>
+            <td>{{ plan.get_plan_type_display }}</td>
+            <td>{{ plan.created|date:"m/d/Y" }}</td>
+            <td>{{ plan.modified|date:"m/d/Y" }}<br>{{ plan.modified_by.get_full_name }}</td>
+            <td>{% if plan.owner == request.user %}You{% else %}
+                {{ plan.owner.get_full_name }}{% endif %}</td>
+            <td>
+                {% include 'revenues/includes/plan_tools.html' %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

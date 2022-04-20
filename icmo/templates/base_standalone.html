@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body_class %}standalone{% endblock %}
+{% block body_content %}
+    <div class="row inset">
+        <div class="{% block box_size %}col-sm-6 col-sm-push-3{% endblock %}">
+            <div class="box box-solid">
+                <div class="box box-body">
+                    <div class="login-logo">
+                        <a href="/">
+                            <img src="{% static 'img/icmo-logo.png' %}" height="50"
+                                 width="295" class="img img-responsive"/>
+                        </a>
+                    </div>
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

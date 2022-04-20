@@ -1,0 +1,113 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags icmo_utils humanize %}
+
+{% block title %}Salesforce Integration - Map Salesforce to ICMO{% endblock %}
+{% block page_title %}Salesforce Integration{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="application/javascript">
+        $(function () {
+            $('#hide-empty').click(function () {
+                $('tr.no-data').toggle();
+            });
+            $('#hide-mapped').click(function () {
+                $('tr.mapped').toggle();
+            });
+            $('#hide-unmapped').click(function () {
+                $('tr.unmapped').toggle();
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Map Salesforce to iCMO
+                        for {{ program_revenue_plan.name }}</h3>
+                    <br><a
+                        href="{% blank_kwargs_url 'sfdc_manage' %}">Back</a>
+                </div>
+                <div class="box-body">
+                    <p>
+                        Choose which programs each Salesforce event should be associated with.
+                        Events
+                        will be allocated to programs based on the chosen Salesforce Segment
+                        field(s)
+                        and the chosen Salesforce Campaign field(s).
+                    </p>
+                    <p>
+                        <button class="btn btn-bordered btn-primary btn-sm" id="hide-empty">Toggle
+                            combinations with no data
+                        </button>
+                        <button class="btn btn-bordered btn-primary btn-sm" id="hide-mapped">
+                            Toggle mapped combinations
+                        </button>
+                        <button class="btn btn-bordered btn-primary btn-sm" id="hide-unmapped">
+                            Toggle unmapped combinations
+                        </button>
+                    </p>
+                    <br>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <table class="table table-striped">
+                            {% for map_entry in map_entries %}
+                                {% ifchanged map_entry.segment_value %}
+                                    {% if not forloop.first %}
+                                        </tbody>
+                                    {% endif %}
+                                    <thead>
+                                    <tr>
+                                        <th colspan="3">
+                                            <h4>{{ map_entry.segment_value }}</h4>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th>Salesforce Segment Name
+                                            ({{ sfc.lead_segment_field }})
+                                        </th>
+                                        <th>Salesforce Campaign Name ({{ sfc.lead_campaign_field }})</th>
+                                        <th>MQLs</th>
+                                        <th>SQLs</th>
+                                        <th>Sales</th>
+                                        <th>Revenue</th>
+                                        <th>iCMO Segment Programs</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                {% endifchanged %}
+                                <tr class="{% if not map_entry.has_events %}no-data{% endif %}
+                                               {% if map_entry.campaign %}mapped{% else %}unmapped{% endif %}">
+                                    <td>{{ map_entry.segment_value }}</td>
+                                    <td>{{ map_entry.source_value }}</td>
+                                    <td>{{ map_entry.stats.mql }}</td>
+                                    <td>{{ map_entry.stats.sql }}</td>
+                                    <td>{{ map_entry.stats.sales }}</td>
+                                    <td>${{ map_entry.stats.sales_revenue|intcomma }}</td>
+                                    <td>
+                                        <select name="map_entry_program_{{ map_entry.id }}">
+                                            <option value="0"></option>
+                                            {% for program in programs %}
+                                                <option value="{{ program.id }}"
+                                                        {% if map_entry.program.id == program.id %}selected{% endif %}>
+                                                    {{ program.segment.name }} - {{ program.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="form-actions pull-right">
+                            <input type="submit" name="submit" value="Save"
+                                   class="btn btn-primary btn-bordered"
+                                   id="submit-save">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

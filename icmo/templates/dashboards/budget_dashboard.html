@@ -1,0 +1,53 @@
+{% extends 'dashboards/base_dashboard.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize %}
+{% block title %}CMO Budget Dashboard{% endblock %}
+{% block page_title %}CMO Budget Dashboard{% endblock %}
+{% block app_summary_js %}
+    <script type="text/javascript">
+        var planMonthPeriodDataSource = ICMO.core.getDataSourceByURL('{{ revenue_plan_period_api_url }}?period_type=month&resolution=revenue_plan');
+        ICMO.charts.bulletChart($('#company-{{ company.slug }}MqlCostBulletChart'), {{company.funnel_data.cost_per_mql_actual.amount}}, {{company.funnel_data.cost_per_mql_plan.amount}}, true);
+        ICMO.charts.bulletChart($('#company-{{ company.slug }}SqlCostBulletChart'), {{company.funnel_data.cost_per_sql_actual.amount}}, {{company.funnel_data.cost_per_sql_plan.amount}}, true);
+        ICMO.charts.periodVerticalBulletChart($('#company-{{ company.slug }}MqlCostVBulletChart'), "MQL Cost Plan vs Actual", 'cost_per_mql_actual__amount', 'cost_per_mql_plan__amount', 'months', planMonthPeriodDataSource);
+        ICMO.charts.periodVerticalBulletChart($('#company-{{ company.slug }}SqlCostVBulletChart'), "SQL Cost Plan vs Actual", 'cost_per_sql_actual__amount', 'cost_per_sql_plan__amount', 'months', planMonthPeriodDataSource);
+
+        ICMO.apps.dashboards.premade.budgetPlannedVsActualByMonth(
+                $("#company-{{ company.slug }}BudgetChart")
+        );
+        ICMO.apps.dashboards.premade.programVsCustomBudgetChart(
+                $("#company-{{ company.slug }}ProgramVsCustomBudgetChart"),
+                [{{ company.dash_budgets.program.budget_plan__sum|default:"0" }}, {{ company.dash_budgets.custom.budget_plan__sum|default:"0" }}],
+                [{{ company.dash_budgets.program.budget_actual__sum|default:"0" }}, {{ company.dash_budgets.custom.budget_actual__sum|default:"0" }}]
+        );
+        ICMO.apps.dashboards.premade.budgetTotalChart(
+                $("#company-{{ company.slug }}BudgetTotalChart"),
+                {{ company.funnel_data.budget_plan.amount }},
+                {{ company.funnel_data.budget_actual.amount }}
+        );
+    </script>
+{% endblock %}
+{% block app_segment_js %}
+    <script type="text/javascript">
+        {% for segment in segments %}
+            var segmentMonthPeriodDataSource = ICMO.core.getDataSourceByURL('{{ api_url }}{{ segment.slug }}/periods/?period_type=month&resolution=segment');
+            ICMO.charts.bulletChart($('#segment-{{ segment.slug }}MqlCostBulletChart'), {{segment.funnel_data.cost_per_mql_actual.amount}}, {{segment.funnel_data.cost_per_mql_plan.amount}}, true);
+            ICMO.charts.bulletChart($('#segment-{{ segment.slug }}SqlCostBulletChart'), {{segment.funnel_data.cost_per_sql_actual.amount}}, {{segment.funnel_data.cost_per_sql_plan.amount}}, true);
+            ICMO.charts.periodVerticalBulletChart($('#segment-{{ segment.slug }}MqlCostVBulletChart'), "MQL Cost Plan vs Actual", 'cost_per_mql_actual__amount', 'cost_per_mql_plan__amount', 'months', segmentMonthPeriodDataSource);
+            ICMO.charts.periodVerticalBulletChart($('#segment-{{ segment.slug }}SqlCostVBulletChart'), "SQL Cost Plan vs Actual", 'cost_per_sql_actual__amount', 'cost_per_sql_plan__amount', 'months', segmentMonthPeriodDataSource);
+
+            ICMO.apps.dashboards.premade.budgetPlannedVsActualByMonth(
+                    $("#segment-{{ segment.slug }}BudgetChart")
+            );
+            ICMO.apps.dashboards.premade.programVsCustomBudgetChart(
+                    $("#segment-{{ segment.slug }}ProgramVsCustomBudgetChart"),
+                    [{{ segment.dash_budgets.program.budget_plan__sum|default:"0" }}, {{ segment.dash_budgets.custom.budget_plan__sum|default:"0" }}],
+                    [{{ segment.dash_budgets.program.budget_actual__sum|default:"0" }}, {{ segment.dash_budgets.custom.budget_actual__sum|default:"0" }}]
+            );
+            ICMO.apps.dashboards.premade.budgetTotalChart(
+                    $("#segment-{{ segment.slug }}BudgetTotalChart"),
+                    {{ segment.funnel_data.budget_plan.amount }},
+                    {{ segment.funnel_data.budget_actual.amount }}
+            );
+        {% endfor %}
+    </script>
+{% endblock %}

@@ -1,0 +1,458 @@
+{% load humanize %}
+{% load icmo_utils %}
+{% load i18n %}
+{% load cloudinary %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro"/>
+        <style>
+        {{ gumby_css|safe }}
+        {{ dashboard_css|safe }}
+        #lead-mix table td, #lead-mix table tr, table{
+            background-color: transparent;
+        }
+        .footer-left, .footer-right{
+            padding:25px;
+            width: 50%;
+        }
+        .footer-left{
+            float: left;
+        }
+        .footer-right{
+            float: right;
+            text-align: right;
+        }
+        a{
+            color: #ccc;
+            text-decoration:none;
+        }
+        .bold{
+            font-weight: bold;
+        }
+        .funnel-set .funnels{
+            padding-top: 0;
+            background-image: url("data:image/png;base64,{{ icmo_funnels|safe }}");
+        }
+        .funnels td{
+            height:225px; 
+            vertical-align:middle;
+        }
+        .page-wrapper{
+            border: 1px solid grey;
+            page-break-after:always;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            width: 100%;
+            padding-top: 25px;
+        }
+        .page-wrapper > div, .funnel-info{
+            max-width: 1060px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+        .funnel-info{
+            border: none;
+        }
+        .funnel-info tr td{
+            text-align: center;
+            border: 0 !important;
+            width: 360px !important;
+            font-weight: bold;
+        }
+        .column-header{
+            font-size: 18px;
+            line-height: 110%;
+            border: 1px solid grey;
+            padding: 12px;
+            page-break-after:always;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            width: 310px !important;
+            display: inline-block;          
+        }
+        .column-info{
+            text-align: center;
+            margin-bottom: 0;
+        }
+        .tiny-label{
+            font-size: 10px;
+        }
+        .huge-label{
+            font-size: 50px;
+        }
+        .segment-row td, .totals td{
+            text-align: right;
+        }
+        td.name{
+            text-align: left;
+        }
+        </style>
+    </head>
+    <body style="width: 1080px;">
+
+<div id="application">
+            <div style="width:50%; text-align:left;display:block;float:left;">
+                {% if company.logo %}
+                    {% cloudinary company.logo format="png" height=45 crop="fill" %}
+                {% endif%}
+                <h2>{%trans 'Lead Generation Mix Target Plan' %}</h2>
+                <div><span class="bold">{% trans 'Company Name' %}:</span> {{ plan.company.name }}</div>
+                <div><span class="bold">{% trans 'Revenue Plan Name' %}:</span> {{ plan.name }}</div>
+                <div><span class="bold">{% trans 'Plan Date Range' %}:</span> 1/1/{{ plan.plan_year }} - 12/31/{{ plan.plan_year }}</div>
+                <div>
+                    <span class="bold">{% trans 'View' %}:</span> 
+                    {% if time_div == '4' %}
+                        {% trans 'Quarterly' %}
+                    {% elif time_div == '12' %}
+                        {% trans 'Monthly' %}
+                    {% else %}
+                        {% trans 'Annual' %}
+                    {% endif %} 
+                </div>
+                <div><span class="bold">{% trans 'Report Date' %}:</span> {{ plan.created|date:"m/d/Y" }}</div>
+           </div>
+            <div style="width:50%; text-align:right;display:block;float:right;">
+                <img src="data:image/png;base64,{{ icmo_logo|safe }}"/>
+           </div>
+           <br style="clear:both" />
+  <section id="lead-mix" class="tabs">
+    <div class="page-wrapper">
+   <div id="lead-mix-summary">
+       <h1 style="display:none">{% trans 'Summary' %}</h1>
+        <p>
+            {% trans 'Plan Sales Goal' %}:
+          <span class="annual-sales-goal">
+              {% if time_div %}
+                ${{ plan.annual_sales_goal.goal__sum|divide:time_div|floatformat:"0"|intcomma }}
+              {% else %}
+                ${{ plan.annual_sales_goal.goal__sum|intcomma }}
+              {% endif %}
+          </span>
+        </p>
+        <table id="lead-mix-summary-table">
+          <thead>
+            <tr>
+              <th>{% trans 'Segment' %}</th> 
+              <th>{% trans '# Contacts' %}</th>
+              <th>{% trans '# MQL' %}</th>
+              <th>{% trans '# SQL' %}</th> 
+              <th>{% trans '# Sales' %}</th>  
+              <th>{% trans '# Touches Per Contact' %}</th>
+              <th>{% trans 'Touches to MQL Conversion' %}</th>
+              <th>{% trans 'MQL to SQL Conversion' %}</th>
+              <th>{% trans 'SQL to Sale Conversion' %}</th>
+              <th>{% trans 'Cost Per Lead' %}</th>
+              <th>{% trans 'Marketing Mix %' %}</th>
+              <th>{% trans 'Program Budget' %}</th>
+              <th>{% trans 'ROI' %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for segment in plan.segments.all %}
+            <tr id="segment-{{ segment.pk }}-row" class="segment-row">
+              <td class="name">{{ segment.name }}</td> 
+              <td class="contact">{{ segment.contact|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="mql">{{ segment.mql|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="sql">{{ segment.sql|divide:time_div|floatformat:"0"|intcomma }}</td> 
+              <td class="sales">{{ segment.sales|divide:time_div|floatformat:"0"|intcomma }}</td>  
+              <td class="touches_per_contact">{{ segment.touches_per_contact|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="touches_to_mql_conversion percentage">{{ segment.touches_to_mql_conversion|percent:"2" }}</td>
+              <td class="mql_to_sql_conversion percentage">{{ segment.mql_to_sql_conversion|percent:"2" }}</td>
+              <td class="sql_to_sale_conversion percentage">{{ segment.sql_to_sale_conversion|percent:"2" }}</td>
+              <td class="cost_per_mql currency">${{ segment.cost_per_mql|floatformat:"2" }}</td>
+              <td class="marketing_mix percentage">{{ segment.marketing_mix|percent:"2" }}</td>
+              <td class="budget currency">${{ segment.budget|intcomma  }}</td>
+              <td class="roi percentage">{{ segment.roi|percent:"2" }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="totals">
+              <td class="name">{% trans 'Totals' %}</td>
+              <td class="contact">{{ plan.contact|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="mql">{{ plan.mql|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="sql">{{ plan.sql|divide:time_div|floatformat:"0"|intcomma }}</td> 
+              <td class="sales">{{ plan.sales|divide:time_div|floatformat:"0"|intcomma }}</td>  
+              <td class="touches_per_contact">{{ plan.touches_per_contact }}</td>
+              <td class="touches_to_mql_conversion percentage">{{ plan.touches_to_mql_conversion|percent:"2" }}</td>
+              <td class="mql_to_sql_conversion percentage">{{ plan.mql_to_sql_conversion|percent:"2" }}</td>
+              <td class="sql_to_sale_conversion percentage">{{ plan.sql_to_sale_conversion|percent:"2" }}</td>
+              <td class="cost_per_mql currency">${{ plan.cost_per_mql|floatformat:"2" }}</td>
+              <td class="marketing_mix percentage">100%</td>
+              <td class="budget currency">${{ plan.budget|intcomma  }}</td>
+              <td class="roi percentage">{{ plan.roi|percent:"2" }}</td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+        <table class="funnel-info">
+            <tr>
+                <td>
+                    <span class="column-header">{% trans 'Lead Generation Funnel' %}</span>
+                    <p class="column-info">
+                        {{ plan.contact|divide:time_div|floatformat:"0"|intcomma }}
+                        <span class="tiny-label">{% trans 'Contacts' %}</span>
+                    </p>
+                </td>
+                <td>
+                    <span class="column-header">{% trans 'Lead Management Funnel' %}</span>
+                    <p class="column-info">
+                        {{ plan.mql|divide:time_div|floatformat:"0"|intcomma }}
+                        <span class="tiny-label">{% trans 'MQLs' %}</span>
+                    </p>
+                </td>
+                <td>
+                    <span class="column-header">{% trans 'Sales Funnel' %}</span>
+                    <p class="column-info">
+                        {{ plan.sql|divide:time_div|floatformat:"0"|intcomma }}
+                        <span class="tiny-label">{% trans 'SQLs' %}</span>
+                    </p>
+                </td>
+            </tr>
+        </table>
+        
+        <div class="funnel-set row">
+ 
+            <div class="twelve columns">
+                <div class="row">
+                    <div class="twelve columns funnels">
+                        <div class="row">
+                            <table class="funnel-info" style="margin-top: 25px">
+                                <tr>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ plan.touches_to_mql_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ plan.mql_to_sql_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ plan.sql_to_sale_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="funnel-info">
+            <tr>
+                <td>
+                    <p class="column-info">
+                        {{ plan.mql|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'MQLs' %}
+                    </p>
+                </td>
+                <td>
+                    <p class="column-info">
+                        {{ plan.sql|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'SQLs' %}
+                    </p>
+                </td>
+                <td>
+                    <p class="column-info">
+                        {{ plan.sales|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'Sales' %}
+                    </p>
+                </td>
+            </tr>
+        </table>
+         <div class="footer-left">
+              <a href="http://intelligentrevenue.com/legal/" target="legal"><span>&copy {% now "Y" %} intelligentRevenue</span></a>
+          </div>
+         <div class="footer-right">
+              <a href="http://intelligentrevenue.com" target="legal"><span>intelligentRevenue.com</span></a>
+          </div>
+          <br/>&nbsp;<br/>
+    </div> <!-- page wrapper -->
+   {% for segment in plan.segments.all %}
+   <div class="page-wrapper">
+    <div id="segment-{{ segment.pk }}-tab" 
+    class="segment-tab">
+       <h1 style="display:none">{{ segment.name }}</h1>
+            {{ segment.name }}
+            {% trans 'Sales Goal' %}:
+            <span class="segment-goal">${{ segment.goal|intcomma }}</span>&nbsp;&nbsp;
+            <span class="segment-average-sale-label">{% trans 'Average Sale' %}</span>: 
+            <span class="segment-average-sale">${{ segment.average_sale|intcomma }}</span>
+
+
+        <table id="segment-{{ segment.pk }}">
+          <thead>
+            <tr>
+              <th>{% trans 'Program' %}</th>
+              <th>{% trans '# Contacts' %}</th>
+              <th>{% trans '# MQL' %}</th>
+              <th>{% trans '# SQL' %}</th> 
+              <th>{% trans '# Sales' %}</th>  
+              <th>{% trans '# Touches Per Contact' %}</th>
+              <th>{% trans 'Touches to MQL Conversion' %}</th>
+              <th>{% trans 'MQL to SQL Conversion' %}</th>
+              <th>{% trans 'SQL to Sale Conversion' %}</th>
+              <th>{% trans 'Cost Per Lead' %}</th>
+              <th>{% trans 'Marketing Mix %' %}</th>
+              <th>{% trans 'Program Budget' %}</th>
+              <th>{% trans 'ROI' %}</th>
+            </tr>
+          </thead>
+          <tbody>
+        {% for program in segment.programs.all %}
+           <tr class="segment-row">
+              <td class="name">{{ program.name }}</td> 
+              <td class="contact">{{ program.contact|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="mql">{{ program.mql|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="sql">{{ program.sql|divide:time_div|floatformat:"0"|intcomma }}</td> 
+              <td class="sales">{{ program.sales|divide:time_div|floatformat:"0"|intcomma }}</td>  
+              <td class="touches_per_contact">{{ program.touches_per_contact|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="touches_to_mql_conversion percentage">{{ program.touches_to_mql_conversion|percent:"2" }}</td>
+              <td class="mql_to_sql_conversion percentage">{{ program.mql_to_sql_conversion|percent:"2" }}</td>
+              <td class="sql_to_sale_conversion percentage">{{ program.sql_to_sale_conversion|percent:"2" }}</td>
+              <td class="cost_per_mql currency">${{ program.cost_per_mql|floatformat:"2" }}</td>
+              <td class="marketing_mix percentage">{{ program.marketing_mix|percent:"2" }}</td>
+              <td class="budget currency">${{ program.budget|intcomma  }}</td>
+              <td class="roi percentage">{% if program.roi %}{{ program.roi|percent:"2" }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+            <tr class="totals">
+              <td class="name">{{ segment.name }}</td> 
+              <td class="contact">{{ segment.contact|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="mql">{{ segment.mql|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="sql">{{ segment.sql|divide:time_div|floatformat:"0"|intcomma }}</td> 
+              <td class="sales">{{ segment.sales|divide:time_div|floatformat:"0"|intcomma }}</td>  
+              <td class="touches_per_contact">{{ segment.touches_per_contact|divide:time_div|floatformat:"0"|intcomma }}</td>
+              <td class="touches_to_mql_conversion percentage">{{ segment.touches_to_mql_conversion|percent:"2" }}</td>
+              <td class="mql_to_sql_conversion percentage">{{ segment.mql_to_sql_conversion|percent:"2" }}</td>
+              <td class="sql_to_sale_conversion percentage">{{ segment.sql_to_sale_conversion|percent:"2" }}</td>
+              <td class="cost_per_mql currency">${{ segment.cost_per_mql|floatformat:"2" }}</td>
+              <td class="marketing_mix percentage">{{ segment.marketing_mix|percent:"2" }}</td>
+              <td class="budget currency">${{ segment.budget|intcomma  }}</td>
+              <td class="roi percentage">{{ segment.roi|percent:"2" }}</td>
+            </tr>
+          </tbody>
+        </table>    
+    </div>
+
+        <table class="funnel-info">
+            <tr>
+                <td>
+                    <span class="column-header">{% trans 'Lead Generation Funnel' %}</span>
+                    <p class="column-info">
+                        {{ segment.contact|divide:time_div|floatformat:"0"|intcomma }}
+                        <span class="tiny-label">{% trans 'Contacts' %}</span>
+                    </p>
+                </td>
+                <td>
+                    <span class="column-header">{% trans 'Lead Management Funnel' %}</span>
+                    <p class="column-info">
+                        {{ segment.mql|divide:time_div|floatformat:"0"|intcomma }}
+                        <span class="tiny-label">{% trans 'MQLs' %}</span>
+                    </p>
+                </td>
+                <td>
+                    <span class="column-header">{% trans 'Sales Funnel' %}</span>
+                    <p class="column-info">
+                        {{ segment.sql|divide:time_div|floatformat:"0"|intcomma }}
+                        <span class="tiny-label">{% trans 'SQLs' %}</span>
+                    </p>
+                </td>
+            </tr>
+        </table>
+        
+        <div class="funnel-set row">
+ 
+            <div class="twelve columns">
+                <div class="row">
+                    <div class="twelve columns funnels">
+                        <div class="row">
+                            <table class="funnel-info" style="margin-top: 25px">
+                                <tr>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ segment.touches_to_mql_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ segment.mql_to_sql_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ segment.sql_to_sale_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="funnel-info">
+            <tr>
+                <td>
+                    <p class="column-info">
+                        {{ segment.mql|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'MQLs' %}
+                    </p>
+                </td>
+                <td>
+                    <p class="column-info">
+                        {{ segment.sql|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'SQLs' %}
+                    </p>
+                </td>
+                <td>
+                    <p class="column-info">
+                        {{ segment.sales|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'Sales' %}
+                    </p>
+                </td>
+            </tr>
+        </table>
+         <div class="footer-left">
+              <a href="http://intelligentrevenue.com/legal/" target="legal"><span>&copy {% now "Y" %} intelligentRevenue</span></a>
+          </div>
+         <div class="footer-right">
+              <a href="http://intelligentrevenue.com" target="legal"><span>intelligentrevenue.com</span></a>
+          </div>
+          <br/>&nbsp;<br/>
+    
+    </div> <!-- page wrapper -->
+    {% endfor %}
+    
+    </section>
+</div>
+
+    </body>
+</html>
+
+

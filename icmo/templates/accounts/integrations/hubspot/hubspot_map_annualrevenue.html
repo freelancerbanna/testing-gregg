@@ -1,0 +1,33 @@
+<p>
+    Check each contact for the annual revenue of their associated company, and if it is equal to or
+    greater than the specified amount, assign it to the specified segment. The operation will be
+    run from the
+    largest amount to the smallest. Ex: first the segment where revenue >= 100000, then the one
+    where it is >= 100, etc. Amounts should not overlap, and one segment should be set to catch
+    contacts where revenue >= 0.
+</p>
+<form method="POST">
+    {% csrf_token %}
+    <table class="table table-striped">
+        <tr>
+            <th>&nbsp;</th>
+            <th>Hubspot Contact Company Annual Revenue</th>
+            <th>iCMO Segment</th>
+        </tr>
+        {% for revenue_map in segments_map %}
+            <tr>
+                <td>If Annual Revenue >=</td>
+                <td>$<input type="number" name="revenue-value-{{ revenue_map.pk }}"
+                           value="{{ revenue_map.hs_value_1 }}"></td>
+                <td>
+                    {{ revenue_map.segment }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="form-actions pull-right">
+        <input type="submit" name="submit" value="Save"
+               class="btn btn-primary btn-bordered"
+               id="submit-save">
+    </div>
+</form>

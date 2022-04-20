@@ -1,0 +1,79 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize crispy_forms_tags %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Available Reports</h3>
+                </div>
+                <table class="table table-responsive table-bordered table-valign-middle">
+                    <tr>
+                        <th align="center">&nbsp;</th>
+                        <th>Category</th>
+                        <th width="80%">Name</th>
+                        <th width="90%">Type</th>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="{% static 'img/cube-icon-color.png' %}"
+                                                height="35"></td>
+                        <td>Performance</td>
+                        <td><a href="{% blank_kwargs_url 'reports_mqls_acquired' %}">MQLs
+                            Acquired</a></td>
+                        <td>Line Chart</td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="{% static 'img/cube-icon-color.png' %}"
+                                                height="35"></td>
+                        <td>Performance</td>
+                        <td><a href="{% blank_kwargs_url 'reports_mqls_by_program' %}">Performance
+                            By
+                            Program</a></td>
+                        <td>Table</td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="{% static 'img/cube-icon-color.png' %}"
+                                                height="35"></td>
+                        <td>Performance</td>
+                        <td><a href="{% blank_kwargs_url 'reports_campaign_results' %}">Performance
+                            by Campaign</a></td>
+                        <td>Table</td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="{% static 'img/cube-icon-color.png' %}"
+                                                height="35"></td>
+                        <td>Custom</td>
+                        <td><a href="{% blank_kwargs_url 'reports_custom_vertical' %}">Custom
+                            Vertical Report</a></td>
+                        <td>Table</td>
+                    </tr>
+                    {% if selected_company.salesforceconnection %}
+                        <tr>
+                            <td align="center"><img
+                                    src="{% static 'img/integrations/salesforce.png' %}"
+                                    height="35">
+                            </td>
+                            <td>Performance</td>
+                            <td><a href="{% blank_kwargs_url 'reports_sfdc_lead_funnel' %}">Lead
+                                Funnel</a></td>
+                            <td>Funnel Chart</td>
+                        </tr>
+                        <tr>
+                            <td align="center"><img
+                                    src="{% static 'img/integrations/salesforce.png' %}"
+                                    height="35">
+                            </td>
+                            <td>Performance</td>
+                            <td><a href="{% blank_kwargs_url 'reports_sfdc_lead_tracking' %}">Lead
+                                Tracking Over Time</a></td>
+                            <td>Table</td>
+                        </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

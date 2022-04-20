@@ -1,0 +1,12 @@
+{% extends 'base_standalone.html' %}
+{% load static crispy_forms_tags %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <p class="text-center">Sign in to start your session</p>
+    {% crispy form %}
+    <div class="text-center">
+        <a href="{% url 'password_reset' %}">I forgot my password</a> |
+        <a href="{% url 'signup' %}" class="text-center">Sign up for intelligentRevenue</a>
+    </div>
+    <br>
+{% endblock %}

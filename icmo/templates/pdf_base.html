@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>intelligentRevenue.com | {% block title %}{% endblock %}</title>
+    <style type="text/css">
+    </style>
+{% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+
+
+<footer class="main-footer">
+    <div class="container">
+        <a href="http://intelligentrevenue.com/legal/" target="legal"><span>&copy {% now "Y" %} intelligentRevenue, LLC</span></a>
+    </div>
+</footer>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

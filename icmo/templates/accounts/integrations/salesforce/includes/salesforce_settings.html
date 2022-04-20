@@ -1,0 +1,59 @@
+<h4>Salesforce Segment Mapping
+</h4>
+
+<p> Which Salesforce field do you want to use to map to iCMO
+    segments? iCMO will try to map Salesforce data off of the Lead table, pivoting off of a single
+    field which you will select below.
+</p>
+
+<p>
+    <b>Opportunities with no leads
+    </b>
+    <br>If you have
+    Opportunities which have no leads associated with them you may also specify optional fields on
+    both the opportunity and account tables to use as a fallback. iCMO will first try the lead
+    field, then the opportunity field, then the account field. If a value cannot be found in any of
+    those fields then iCMO will mark the contact as 'Unknown'.
+</p>
+<p>
+    <b>Mapping Types
+    </b>
+    <br>
+    iCMO is capable of mapping fields in two different ways:
+<p>
+    <i>Text Match:
+    </i> if the field is
+    a text field (ex: 'Industry') then iCMO will enable you to map a specific value in that field
+    (ex: 'Healthcare') to a specific iCMO Segment.
+</p>
+<p>
+    <i>Numeric:
+    </i> alternately if the
+    field is numeric (ex: 'AnnualRevenue') iCMO will enable you to map the field to a specific iCMO
+    segment based on whether it is greater than or equal to a specific value (ex: '>10,000,000').
+
+</p>
+<b>All selected fields must be of the same type, text or or numeric.
+</b>
+<h4>Campaign
+    Mapping
+</h4>
+<p> Which Salesforce field do you want to use to map to iCMO campaigns? iCMO will
+    first try to map iCMO Campaigns based off of a field you select from the Lead table.
+</p>
+<p>
+
+    <b>Opportunities with no leads
+    </b>
+    <br> If you have Opportunities which have no leads associated
+    with them you may also specify optional fields on the opportunity and account tables to use as
+    a fallback. iCMO will first try the lead field, then the opportunity field, then the account
+    field.
+</p>
+<p>
+    <b>Lead Source Fallback
+    </b>
+    <br> If you would like, iCMO can use the standard
+    Salesforce Lead Source field found on both the Lead and Opportunity tables as a fallback in
+    case the other methods do not find a source.
+</p>

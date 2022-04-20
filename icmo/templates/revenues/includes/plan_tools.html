@@ -1,0 +1,29 @@
+<button role="button" id="edit-{{ plan.pk }}"
+        class="btn btn-primary btn-sm"
+        data-toggle="modal"
+        data-target="#edit-plan-modal">
+    <i class="fa fa-tachometer"></i>
+</button>
+{% if plan.access == 'W' %}
+    <button role="button" id="share{{ plan.pk }}"
+            class="btn btn-primary btn-sm"
+            data-toggle="modal" data-target="#share-plan-modal-{{ plan.id }}"
+            title="Share Plan">
+        <i class="fa fa-users"></i>
+    </button>
+{% endif %}
+{% if plan.access == 'W' %}
+    <button role="button" id="copy-{{ plan.pk }}"
+            class="btn btn-primary btn-sm"
+            title="Clone Plan"
+            data-toggle="modal" data-target="#clone-plan-modal">
+        <i class="fa fa-copy"></i>
+    </button>
+{% endif %}
+{% if plan.access == 'W' %}
+    <button role="button" id="delete-{{ plan.pk }}"
+            class="btn btn-primary btn-sm"
+            data-toggle="modal" data-target="#delete-plan-modal">
+        <i class="fa fa-trash-o"></i>
+    </button>
+{% endif %}

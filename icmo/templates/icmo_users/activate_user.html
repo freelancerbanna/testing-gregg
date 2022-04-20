@@ -1,0 +1,94 @@
+{% extends 'base_standalone.html' %}
+{% load staticfiles %}
+{% block title %}Activate New User{% endblock %}
+{% block content %}
+    {% if new_user %}
+        {% if activate_button %}
+            <h2>Activate New User</h2>
+            <p>
+                New user <b>{{ new_user.get_full_name }} <{{ new_user.email }}></b>
+                of <b>{{ new_user.employer_name }}</b> is awaiting activation. Click the button at
+                the bottom of the page to activate this user.
+            </p>
+            <hr>
+            <div class="row">
+                <Div class="col-sm-6">
+                    <h4>Contact Information</h4>
+                    <table class="table table-striped table-condensed">
+                        <tr>
+                            <th>Name</th>
+                            <td>{{ new_user.get_full_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ new_user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone</th>
+                            <td>
+                                <a href='tel:+1{{ new_user.phone_number }}'>+1{{ new_user.phone_number }}</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Title</th>
+                            <td>{{ new_user.title }}</td>
+                        </tr>
+                        <tr>
+                            <th>Company</th>
+                            <td>
+                            {% with new_user.owned_companies.first as employer %}
+                                {% if employer.website %}
+                                    <a href="{{ employer.website }}"
+                                       target=_blank>{{ employer_name }}</a>
+                                {% else %}
+                                    {{ employer_name }}
+                                {% endif %}
+                            {% endwith %}
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+                <div class="col-sm-6">
+                    <h4>Activation Will:</h4>
+                    <ol>
+                        <li>Generate a password for this user</li>
+                        <li>Activate their account, so that they may login</li>
+                        <li>Email you a copy of their login details</li>
+                        <li>Email the account holder to let them know their account has been
+                            activated
+                        </li>
+                    </ol>
+                </div>
+            </div>
+            <hr>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-primary btn-bordered col-sm-12"
+                       value="Activate This User">
+            </form>
+        {% else %}
+            <h2>New User Activated</h2>
+            <p>New account holder {{ new_user.get_full_name }}
+                of {{ new_user.billingaccount.billing_company.name }}has been
+                activated.</p>
+
+            <p>They may now login with:</p>
+
+            <p><b>Email: </b><code>{{ new_user.email }}</code></p>
+
+            <p><b>Password: </b><code>{{ password }}</code></p>
+
+            <p>
+                You have been e-mailed a copy of these details.
+            </p>
+        {% endif %}
+    {% else %}
+        <h2>Link Expired</h2>
+        <p><span class="label label-warning">Important</span>
+            This link is no longer valid. If you need to change the password
+            please do so via the <a
+                    href="{% url 'password_reset' %}">password reset</a> function.
+        </p>
+    {% endif %}
+{% endblock %}

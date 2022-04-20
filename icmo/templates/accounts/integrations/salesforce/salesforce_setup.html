@@ -1,0 +1,36 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags humanize %}
+{% load blank_kwargs_url from icmo_utils %}
+
+{% block title %}Salesforce Integration{% endblock %}
+{% block page_title %}Salesforce Integration{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Set up your Salesforce
+                        Integration</h3>
+                </div>
+                <div class="box-body">
+                    {% if object.connected %}
+                        {% include 'accounts/integrations/salesforce/includes/salesforce_settings.html' %}
+                    {% else %}
+                        <p>
+                            intelligentRevenue can import campaign performance
+                            data from Salesforce.
+                            Enabling this integration will not make any
+                            changes to your Salesforce data.
+                            To
+                            enable this integration click the authorize
+                            button below.
+                        </p>
+                        <hr>
+                        {% crispy form %}
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

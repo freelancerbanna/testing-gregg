@@ -1,0 +1,47 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load i18n %}
+{% block title %}Scheduler{% endblock %}
+{% block page_title %}My Timeline{% endblock %}
+
+{% block compressed_js %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'js/scheduler.js' %}"></script>
+{% endblock %}
+
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/x-kendo-template" id="ganttToolbarTemplate">
+        <i title='Syncing'
+           class="grid-syncing small text-red fa fa-refresh fa-spin"
+           style="display:none"></i>&nbsp;&nbsp;
+
+        <button class="btn btn-primary btn-sm gantt-today"
+                title="Jump to Today">
+            <i class="fa fa-calendar"></i>&nbsp;
+        </button>
+        <button class="btn btn-primary btn-sm gantt-pdf"
+                title="Export to PDF">
+            <i class="fa fa-file-pdf-o"></i>
+        </button>
+    </script>
+    <script type="text/javascript">
+        var initialLoad = true;
+        $(document).ready(function () {
+            ICMO.apps.resources.scheduler.create($('#scheduler'));
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box">
+                <div class="box-body">
+                    <div id="scheduler"
+                         data-api-url="{{ scheduler_api_url }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

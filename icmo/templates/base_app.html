@@ -1,0 +1,124 @@
+{% extends 'base_main.html' %}
+{% block compressed_js %}
+    {{ block.super }}
+    {% block app_js_libs %}{% endblock %}
+{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    {% include 'misc_widgets/grid_row_tools.html' %}
+    {% if show_summary %}{% block app_summary_js %}{% endblock %}{% endif %}
+    {% block app_segment_js %}{% endblock %}
+    {% block app_extra_js %}{% endblock %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    {% if show_summary %}
+                        <li class="active">
+                            <a href="#tab_0" data-toggle="tab"
+                               aria-expanded="true">
+                                Summary
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for segment in segments %}
+                        <li class="segment-tab-link {% if forloop.first and not show_summary %}active{% endif %}">
+                            <a href="#tab_{{ segment.slug }}" data-toggle="tab"
+                               aria-expanded="{% if forloop.first and not show_summary %}true{% else %}false{% endif %}">
+                                {{ segment.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="tab-content">
+                    {% if show_summary %}
+                        <div class="tab-pane active" id="tab_0">
+                            {% if not disable_charts %}
+                                <div id='chartsummary' class="chart-top-wrapper collapse">
+                                    {% block app_summary_charts %}{% endblock %}
+                                </div>
+                                <div class="chart-toggle">
+                                    <a data-toggle="collapse" href="#chartsummary"
+                                       aria-expanded="false" title="Show/Hide Charts"
+                                       aria-controls="funnels-summary">
+                                        <i class="fa fa-bar-chart"></i>
+                                        <span>Charts</span>
+                                    </a>
+                                </div>
+                            {% endif %}
+                            {% if not disable_toolbar %}
+                                <div id='grid-summary-tools' class="box-tools grid-summary-tools">
+                                    <i title='Syncing'
+                                       class="grid-syncing small text-red fa fa-refresh fa-spin"
+                                       style="display:none"></i>&nbsp;&nbsp;
+                                    {% block app_summary_tools %}{% endblock %}
+                                    <div class="btn-group" role="group"
+                                         aria-label="...">
+                                        <button class="btn btn-primary btn-sm grid-pdf"
+                                                title="Export to PDF">
+                                            <i class="fa fa-file-pdf-o"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm grid-excel"
+                                                title="Export to Excel">
+                                            <i class="fa fa-file-excel-o"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% block app_summary_content %}{% endblock %}
+                        </div>
+                    {% endif %}
+                    {% for segment in segments %}
+                        <div class="tab-pane tab-content segment-tab {% if forloop.first and not show_summary %} active{% endif %}"
+                             id="tab_{{ segment.slug }}">
+                            {% if not disable_charts %}
+                                <div id='charts-{{ segment.slug }}'
+                                     class="chart-top-wrapper collapse">
+                                    {% block app_segment_charts %}{% endblock %}
+                                </div>
+                                <div class="chart-toggle">
+                                    <a data-toggle="collapse" href="#charts-{{ segment.slug }}"
+                                       aria-expanded="false" title="Show/Hide Charts"
+                                       aria-controls="charts-{{ segment.slug }}">
+                                        <i class="fa fa-bar-chart"></i>
+                                        <span>Charts</span>
+                                    </a>
+                                </div>
+                            {% endif %}
+                            {% if not disable_toolbar %}
+                                <div id='grid-segment-{{ segment.slug }}-tools'
+                                     class="box-tools grid-{{ segment.slug }}-tools">
+                                    <i title='Syncing'
+                                       class="grid-syncing small text-red fa fa-refresh fa-spin"
+                                       style="display:none"></i>&nbsp;&nbsp;
+                                    {% block app_segment_tools %}{% endblock %}
+                                    <button class="btn btn-primary btn-sm grid-cancel"
+                                            title="Cancel changes"
+                                            disabled aria-disabled="true">
+                                        <i class="fa fa-undo"></i>
+                                    </button>
+                                    <div class="btn-group" role="group"
+                                         aria-label="...">
+                                        <button class="btn btn-primary btn-sm grid-pdf"
+                                                title="Export to PDF">
+                                            <i class="fa fa-file-pdf-o"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm grid-excel"
+                                                title="Export to Excel">
+                                            <i class="fa fa-file-excel-o"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% include app_segment_content_template with segment=segment %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block app_extra_content %}
+    {% endblock %}
+{% endblock %}

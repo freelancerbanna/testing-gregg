@@ -1,0 +1,125 @@
+{% extends 'base_main.html' %}
+{% load crispy_forms_tags icmo_utils humanize %}
+
+{% block title %}Salesforce Integration - Map Salesforce to ICMO{% endblock %}
+{% block page_title %}Salesforce Integration{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="application/javascript">
+        $(function () {
+            $('#virtual_contacts').kendoGrid({
+               toolbar: ["pdf", "excel"],
+                scrollable: true,
+                sortable: true,
+                resizable:true,
+                filterable: true,
+                groupable: true,
+                pageable: {
+                    pageSize: 100,
+                }
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Virtual Contacts Report
+                        {% if vc_plan %}
+                            for {{ vc_plan.name }}
+                        {% endif %}
+                    </h3>
+                    <br><a
+                        href="{% blank_kwargs_url 'sfdc_manage' %}">Back</a>
+                </div>
+                <div class="box-body">
+                    <p>
+                        This report shows ICMO's view of the Salesforce universe.
+                    </p>
+                    <table id='virtual_contacts' class="table table-striped">
+                        <thead>
+                        <th data-field="create_date" data-type="date"
+                            data-template="#=kendo.toString(new Date(create_date), 'd')#">SFDC Create Date</th>
+                        <th data-field="lead">SFDC Lead</th>
+                        <th data-field="opportunity">SFDC Opportunity</th>
+                        <th data-field="account">SFDC Account</th>
+                        <th data-field="virtual">Virtual?</th>
+                        <th data-field="segment">SFDC Segment</th>
+                        <th data-field="campaign">SFDC Campaign</th>
+                        <th data-field="events">Events</th>
+                        </thead>
+                        <tbody>
+                        {% for vc in virtual_contacts %}
+                            <tr>
+                                <Td>{{ vc.created_date.isoformat }}</Td>
+                                <Td>
+                                    {% if vc.salesforce_lead %}
+                                        <a href="{{ sfc.salesforce_url }}{{ vc.salesforce_lead.sfdc_id }}"
+                                           target="_blank">
+                                            {{ vc.salesforce_lead.sfdc_name }}
+                                            ({{ vc.salesforce_lead.sfdc_company }})
+                                        </a>
+                                    {% endif %}
+                                </Td>
+                                <Td>
+                                    {% if vc.salesforce_opportunity %}
+                                        <a href="{{ sfc.salesforce_url }}{{ vc.salesforce_opportunity.sfdc_id }}"
+                                           target="_blank">
+                                            {{ vc.salesforce_opportunity.sfdc_name }}
+                                        </a>
+                                    {% endif %}
+                                </Td>
+                                <Td>
+                                    {% if vc.salesforce_account %}
+                                        <a href="{{ sfc.salesforce_url }}{{ vc.salesforce_account.sfdc_id }}"
+                                           target="_blank">
+                                            {{ vc.salesforce_account.sfdc_name }}
+                                        </a>
+                                    {% endif %}
+                                </Td>
+                                <Td>{% if vc.is_virtual %}Y{% else %}N{% endif %}</Td>
+                                <Td>
+                                    {{ vc.segment_field_text_value }}
+                                    <br>
+                                    <small>{% spaceless %}
+                                        {% if vc.salesforce_lead %}
+                                            Lead.{{ sfc.lead_segment_field }}
+                                        {% elif vc.salesforce_opportunity %}
+                                            Opportunity.{{ sfc.opportunity_segment_field }}
+                                        {% elif vc.salesforce_account %}
+                                            Account.{{ sfc.account_segment_field }}
+                                        {% endif %}{% endspaceless %}</small>
+                                </Td>
+                                <Td>
+                                    {{ vc.campaign_field_value }}<br>
+                                    <small>{% spaceless %}
+                                        {% if vc.salesforce_lead %}
+                                            Lead.{{ sfc.lead_campaign_field }}
+                                        {% elif vc.salesforce_opportunity %}
+                                            Opportunity.{{ sfc.opportunity_campaign_field }}
+                                        {% elif vc.salesforce_account %}
+                                            Account.{{ sfc.account_campaign_field }}
+                                        {% endif %}
+                                    {% endspaceless %}</small>
+                                </Td>
+                                <Td class="small">
+                                    <div class='events-box'>
+                                    {% for event in vc.events.all %}
+                                        {{ event.event_date|date:"SHORT_DATE_FORMAT" }}:
+                                        {{ event.event_stage }}
+                                        {% if event.amount %}${{ event.amount }}{% endif %}
+                                        {% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                    </div>
+                                </Td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

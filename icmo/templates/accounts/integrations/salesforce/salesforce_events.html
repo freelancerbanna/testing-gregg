@@ -1,0 +1,116 @@
+{% extends 'base_main.html' %}
+{% load static crispy_forms_tags icmo_utils humanize %}
+
+{% block title %}Salesforce Integration - Salesforce Events{% endblock %}
+{% block page_title %}Salesforce Integration{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="application/javascript" src="{% static 'moment/min/moment.min.js' %}"></script>
+    <script type="application/javascript"
+            src="{% static 'moment-timezone/builds/moment-timezone-with-data.min.js' %}"></script>
+    <script type="application/javascript">
+        $(function () {
+            $('#virtual_contacts').kendoGrid({
+                toolbar: ["pdf", "excel"],
+                scrollable: true,
+                sortable: true,
+                resizable: true,
+                filterable: true,
+                groupable: true,
+                pageable: {
+                    pageSize: 100,
+                }
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Salesforce Events Report
+                        for {{ vc_plan.name }}
+                    </h3>
+                    <br><a
+                        href="{% blank_kwargs_url 'sfdc_manage' %}">Back</a>
+                </div>
+                <div class="box-body">
+                    <p>
+                        This report shows ICMO's view of the Salesforce universe.
+                    </p>
+                    <table id='virtual_contacts' class="table table-striped table-compact">
+                        <thead>
+                        <th data-field="event_date" data-type="date"
+                            data-template="#=kendo.toString(moment.tz(event_date, '{{ sfc.salesforce_timezone }}'), 'd').format('l')#">
+                            Date
+                        </th>
+                        <th data-field="event_stage">Stage</th>
+                        <th data-field="vc_lead">VC Lead</th>
+                        <th data-field="vc_opportunity">VC Opportunity</th>
+                        <th data-field="vc_account">VC Account</th>
+                        <th data-field="virtual">Orphan?</th>
+                        <th data-field="segment">Segment</th>
+                        <th data-field="campaign">Campaign</th>
+                        </thead>
+                        <tbody>
+                        {% for event in events %}
+                            <tr>
+                                <Td>{{ event.event_date.isoformat }}</Td>
+                                <td>{{ event.event_stage|title }} {% if event.amount %}
+                                    ${{ event.amount }}{% endif %}
+                                </td>
+                                <Td>
+                                    {% if event.virtual_contact.salesforce_lead %}
+                                        {{ event.virtual_contact.salesforce_lead.sfdc_name }}
+                                        ({{ event.virtual_contact.salesforce_lead.sfdc_company }})
+                                        <a href="{{ sfc.salesforce_url }}{{ event.virtual_contact.salesforce_lead.sfdc_id }}"
+                                           target="_blank"><i class="fa fa-external-link"></i></a>
+                                    {% endif %}
+                                </td>
+                                <Td>
+                                    {% if event.virtual_contact.salesforce_opportunity %}
+                                        {{ event.virtual_contact.salesforce_opportunity.sfdc_name }}
+                                        <a href="{{ sfc.salesforce_url }}{{ event.virtual_contact.salesforce_opportunity.sfdc_id }}"
+                                           target="_blank"><i class="fa fa-external-link"></i></a>
+                                    {% endif %}</td>
+                                <Td>
+                                    {% if event.virtual_contact.salesforce_account %}
+                                        {{ event.virtual_contact.salesforce_account.sfdc_name }}
+                                        <a href="{{ sfc.salesforce_url }}{{ event.virtual_contact.salesforce_account.sfdc_id }}"
+                                           target="_blank"><i class="fa fa-external-link"></i></a>
+                                    {% endif %}
+                                </Td>
+                                <Td>{% if event.virtual_contact.is_virtual %}Y{% else %}
+                                    N{% endif %}</Td>
+                                <Td>
+                                    {{ event.virtual_contact.segment_field_text_value }}
+                                    <i class="fa fa-info-circle"
+                                       title="{% spaceless %}{% if event.virtual_contact.salesforce_lead %}
+                                            Lead.{{ sfc.lead_segment_field }}
+                                        {% elif event.virtual_contact.salesforce_opportunity %}
+                                            Opportunity.{{ sfc.opportunity_segment_field }}
+                                        {% elif event.virtual_contact.salesforce_account %}
+                                            Account.{{ sfc.account_segment_field }}
+                                        {% endif %}{% endspaceless %}"></i>
+                                </Td>
+                                <Td>
+                                    {{ event.virtual_contact.campaign_field_value }}
+                                    <i class="fa fa-info-circle"
+                                       title="{% spaceless %}{% if event.virtual_contact.salesforce_lead %}
+                                            Lead.{{ sfc.lead_campaign_field }}
+                                        {% elif event.virtual_contact.salesforce_opportunity %}
+                                            Opportunity.{{ sfc.opportunity_campaign_field }}
+                                        {% elif event.virtual_contact.salesforce_account %}
+                                            Account.{{ sfc.account_campaign_field }}
+                                        {% endif %}{% endspaceless %}"></i>
+                                </Td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

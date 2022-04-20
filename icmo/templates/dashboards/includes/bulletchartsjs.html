@@ -1,0 +1,90 @@
+var bulletData = {
+    'company-{{ company.slug }}': {
+        mql: [
+            {% for item in company.mql_planned_vs_actual_monthly %}
+                {
+                    current: {{item.actual}},
+                    target: {{ item.plan }},
+                    category: '{{ item.month }}'
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        sql: [
+            {% for item in company.sql_planned_vs_actual_monthly %}
+                {
+                    current: {{item.actual}},
+                    target: {{ item.plan }},
+                    category: '{{ item.month }}'
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        sales: [
+            {% for item in company.sales_planned_vs_actual_monthly %}
+                {
+                    current: {{item.actual}},
+                    target: {{ item.plan }},
+                    category: '{{ item.month }}'
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        revenue: [
+            {% for item in company.revenue_planned_vs_actual_monthly %}
+                {
+                    current: {{item.actual}},
+                    target: {{ item.plan }},
+                    category: '{{ item.month }}'
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    },
+    {% for segment in segments %}
+        'segment-{{ segment.slug }}': {
+            mql: [
+                {% for item in segment.mql_planned_vs_actual_monthly %}
+                    {
+                        current: {{item.actual}},
+                        target: {{ item.plan }},
+                        category: '{{ item.month }}'
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            sql: [
+                {% for item in segment.sql_planned_vs_actual_monthly %}
+                    {
+                        current: {{item.actual}},
+                        target: {{ item.plan }},
+                        category: '{{ item.month }}'
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            sales: [
+                {% for item in segment.sales_planned_vs_actual_monthly %}
+                    {
+                        current: {{item.actual}},
+                        target: {{ item.plan }},
+                        category: '{{ item.month }}'
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            revenue: [
+                {% for item in segment.revenue_planned_vs_actual_monthly %}
+                    {
+                        current: {{item.actual}},
+                        target: {{ item.plan }},
+                        category: '{{ item.month }}'
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+ICMO.charts.verticalBulletChart($('#company-{{ company.slug }}MqlChart'), "MQL Planned v. Actual Monthly", bulletData['company-{{ company.slug }}'].mql);
+ICMO.charts.verticalBulletChart($('#company-{{ company.slug }}SqlChart'), "SQL Planned v. Actual Monthly", bulletData['company-{{ company.slug }}'].sql);
+ICMO.charts.verticalBulletChart($('#company-{{ company.slug }}SalesChart'), "Sales Planned v. Actual Monthly", bulletData['company-{{ company.slug }}'].sales);
+ICMO.charts.verticalBulletChart($('#company-{{ company.slug }}TotalSalesValueChart'), "Revenue Planned v. Actual Monthly", bulletData['company-{{ company.slug }}'].revenue, true);
+{% for segment in segments %}
+    ICMO.charts.verticalBulletChart($('#segment-{{ segment.slug }}MqlChart'), "MQL Planned v. Actual Monthly", bulletData['segment-{{ segment.slug }}'].mql);
+    ICMO.charts.verticalBulletChart($('#segment-{{ segment.slug }}SqlChart'), "SQL Planned v. Actual Monthly", bulletData['segment-{{ segment.slug }}'].sql);
+    ICMO.charts.verticalBulletChart($('#segment-{{ segment.slug }}SalesChart'), "Sales Planned v. Actual Monthly", bulletData['segment-{{ segment.slug }}'].sales);
+    ICMO.charts.verticalBulletChart($('#segment-{{ segment.slug }}TotalSalesValueChart'), "Revenue Planned v. Actual Monthly", bulletData['segment-{{ segment.slug }}'].revenue, true);
+{% endfor %}

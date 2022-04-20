@@ -1,0 +1,464 @@
+{% load humanize %}
+{% load icmo_utils %}
+{% load i18n %}
+{% load cloudinary %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro"/>
+        <style>
+        {{ gumby_css|safe }}
+        {{ dashboard_css|safe }}
+        .funnel-info tr td, table, tr,td{
+            background-color: transparent;
+        }
+        .footer-left, .footer-right{
+            padding:25px;
+            width: 50%;
+        }
+        .footer-left{
+            float: left;
+        }
+        .footer-right{
+            float: right;
+            text-align: right;
+        }
+        a{
+            color: #ccc;
+            text-decoration:none;
+        }
+        .bold{
+            font-weight: bold;
+        }
+        .funnel-set .funnels{
+            padding-top: 0;
+            background-image: url("data:image/png;base64,{{ icmo_funnels|safe }}");
+        }
+        .funnels td{
+            height:225px; 
+            vertical-align:middle;
+        }
+        .page-wrapper{
+            border: 1px solid grey;
+            page-break-after:always;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            width: 100%;
+            padding-top: 25px;
+        }
+        .page-wrapper > div, .funnel-info{
+            max-width: 1060px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+        .funnel-info{
+            border: none;
+        }
+        .funnel-info tr td{
+            text-align: center;
+            border: 0 !important;
+            width: 360px !important;
+            font-weight: bold;
+        }
+        .column-header{
+            font-size: 18px;
+            line-height: 110%;
+            border: 1px solid grey;
+            padding: 12px;
+            page-break-after:always;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            width: 310px !important;
+            display: inline-block;          
+        }
+        .column-info{
+            text-align: center;
+            margin-bottom: 0;
+        }
+        .tiny-label{
+            font-size: 10px;
+        }
+        .huge-label{
+            font-size: 50px;
+        }
+        .segment-row td, .totals td{
+            text-align: right;
+        }
+        td.name{
+            text-align: left;
+        }
+        </style>
+        <script>
+        {{ jquery_js|safe }}
+        $(document).ready(function () {
+            $('.budget-categories').each(function(){$(this).icmoBudgetCategories()});
+            $('.total-budget').each(function(){$(this).icmoTotalBudget()});
+        });
+        (function($) {
+            $.fn.icmoBudgetCategories = function() {
+                // get the raw numberes and figure out which is highest.
+                var sender = this;
+                var graph_data ={};
+                var max = 0;
+                $(this).find('.graph').each(function(){
+                    var index = $(this).attr('class').split(' ')[1];
+                    graph_data[index] = parseInt($(this).text());
+                    if( graph_data[index] > max ) max = graph_data[index];
+                });
+                $.each(graph_data, function(k, v){
+                    var element = $(sender).find('.'+k);
+                    var width = v / max * 200 + 1;
+                    $(element).html(    '<span class="'+k+'-bar" '
+                                        +'style="display:inline-block;width:'+width
+                                        +'px;height:20px"></span><span class="label">'
+                                        +'$'+renderAsHumanNumber(v, 0)+'</span>' );
+                });
+            }
+
+            
+            $.fn.icmoTotalBudget = function() {
+                var sender = this;
+                var graph_data ={};
+                var max = 0;
+                $(this).find('.graph').each(function(){
+                    var index = $(this).attr('class').split(' ')[1];
+                    graph_data[index] = parseInt($(this).text());
+                    if( graph_data[index] > max ) max = graph_data[index];
+                });
+                $.each(graph_data, function(k, v){
+                    var element = $(sender).find('.'+k);
+                    var height = v / max * 100 + 1;
+                    var label = k.replace('total-budget-', '');
+                    label = label.charAt(0).toUpperCase() + label.slice(1);
+                    
+                    $(element).html(    '<span class="'+k+'-bar" '
+                                        +'style="display:inline-block;width:100%;'
+                                        +'height:'+height+'px;position:absolute;'
+                                        +'z-index:100;bottom:0"></span>'
+                                        +'<span class="label" style="position:relative;'
+                                        +'top:-'+parseInt(height-20)+'px">$'
+                                        +renderAsHumanNumber(v, 0)+'</span>'
+                                        +'<span class="label" '
+                                        +'style="position:relative;top:20px">'
+                                        +label+'</span>');
+                });
+            }
+        }( jQuery ));
+        function renderAsHumanNumber(x, p) {
+            var num =  parseFloat(x)
+            if( isNaN(num) ) num = 0;
+            return num.toFixed(p).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        </script>
+    </head>
+    <body style="width: 1080px;">
+
+<div id="application">
+            <div style="width:50%; text-align:left;display:block;float:left;">
+                {% if company.logo %}
+                    {% cloudinary company.logo format="png" height=45 crop="fill" %}
+                {% endif%}
+                <h2>{%trans 'Revenue Performance Report' %}</h2>
+                <div><span class="bold">{% trans 'Company Name' %}:</span> {{ plan.company.name }}</div>
+                <div><span class="bold">{% trans 'Revenue Plan Name' %}:</span> {{ plan.name }}</div>
+                <div><span class="bold">{% trans 'Plan Date Range' %}:</span> 1/1/{{ plan.plan_year }} - 12/31/{{ plan.plan_year }}</div>
+                <div>
+                    <span class="bold">{% trans 'View' %}:</span> 
+                    {% if time_div == '4' %}
+                        {% trans 'Quarterly' %}
+                    {% elif time_div == '12' %}
+                        {% trans 'Monthly' %}
+                    {% else %}
+                        {% trans 'Annual' %}
+                    {% endif %} 
+                </div>
+                <div><span class="bold">{% trans 'Report Date' %}:</span> {% now "m/d/Y" %}</div>
+            </div>
+            <div style="width:50%; text-align:right;display:block;float:right;">
+                <img src="data:image/png;base64,{{ icmo_logo|safe }}"/>
+            </div>
+            <br style="clear:both" />
+            <section id="dashboard" class="tabs">
+
+    <div id="cmo-recap" >
+		
+		
+       <table class="funnel-info">
+            <tr>
+                <td>
+                    <span class="column-header">{% trans 'Lead Generation Funnel' %}</span>
+                    <p class="column-info">
+                        <span>{% trans 'Contacts' %}</span>
+                    </p>
+                    <table>
+						<tr>
+							<td>{% trans 'Plan' %}</td>
+							<td>{% trans 'Actual' %}</td>
+							<td>{% trans 'Delta' %}</td>
+						</tr>
+						<tr>
+							<td class="plan-value">{{ plan.contact|divide:time_div|floatformat:"0"|intcomma }}</td>
+							<td>{{ plan.actual.contacts}}</td>
+							<td class="{% if plan.actual.contacts > plan.contact %}icmo-delta-positive{% else %}icmo-delta-negative{% endif %}">
+                                {{ plan.contact|delta:plan.actual.contacts|intcomma }}
+                            </td>
+						</tr>
+                    </table>
+                </td>
+                <td>
+                    <span class="column-header">{% trans 'Lead Management Funnel' %}</span>
+                </td>
+                <td>
+                    <span class="column-header">{% trans 'Sales Funnel' %}</span>
+                </td>
+            </tr>
+        </table>
+        
+        <div class="funnel-set row">
+ 
+            <div class="twelve columns">
+                <div class="row">
+                    <div class="twelve columns funnels">
+                        <div class="row">
+                            <table class="funnel-info" style="margin-top: 25px">
+                                <tr>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ plan.touches_to_mql_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ plan.mql_to_sql_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="column-info">
+                                            <span class="huge-label">{{ plan.sql_to_sale_conversion|percent:"0" }}</span>
+                                        </p>
+                                        <p class="column-info">
+                                            <span class="tiny-label">{% trans 'Conversion' %}</span>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="funnel-info">
+            <tr>
+                <td>
+                    <p class="column-info">
+                        {{ plan.mql|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'MQLs' %}
+                    </p>
+                </td>
+                <td>
+                    <p class="column-info">
+                        {{ plan.sql|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'SQLs' %}
+                    </p>
+                </td>
+                <td>
+                    <p class="column-info">
+                        {{ plan.sales|divide:time_div|floatformat:"0"|intcomma }}
+                        {% trans 'Sales' %}
+                    </p>
+                </td>
+            </tr>
+        </table>
+		
+		
+		
+        <div class="budgets">
+            <div class="row">
+                <div class="five columns budget-categories">
+                    <div class="row">
+                        <div class="four columns label">
+                            {% trans 'Lead Generation Programs' %}
+                        </div>
+                        <div class="eight columns">
+                            <div class="graph lead-generation-plan" style="width: 90px">{{ plan.lead_generation_programs_plan }}</div>
+                            <div class="graph lead-generation-actual">{{ plan.lead_generation_programs_actual }}</div>                           
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns label">
+                            {% trans 'Other Budget items' %}
+                        </div>
+                        <div class="eight columns">
+                            <div class="graph other-budget-plan">{{ plan.other_budget_plan }}</div>
+                            <div class="graph other-budget-actual">{{ plan.other_budget_actual }}</div>                           
+                        </div>
+                    </div>
+                   
+                    <div class="legend row">
+                          
+                        <div class="push_four four columns label">
+                            {% trans 'Plan' %}
+                            <span class="budget-chart-legend other-budget-plan-bar"</span>
+                        </div>
+                        <div class="four columns label">
+                            {% trans 'Actual' %}
+                            <span class="budget-chart-legend other-budget-actual-bar"</span>                         
+                        </div>
+
+                    </div>
+                    <hr/>
+                    <h3 class="cmo-label">{% trans 'Annual Plan vs Actual by Budget Categories' %}</h3>  
+                </div>
+                <div class="push_two five columns total-budget">
+                    <div class="row">
+                        <div class="push_two eight columns vert-chart-wrapper">
+                            <div class="graph total-budget-plan">{{ plan.total_budget_plan }}</div> 
+                            <div class="graph total-budget-actual">{{ plan.total_budget_actual }}</div>                           
+                        </div>
+                    </div>
+                    <hr/>
+                    <h3 class="cmo-label">{% trans 'Annual Plan vs Actual by Total Budget' %}</h3>  
+                </div>
+            </div>
+        </div>
+
+
+        <div class="resources">
+            <div class="row">
+                <div class="five columns circles">
+                    <div class="row">
+                        <div class="two columns">
+                            <div class="past-due circle">
+                                {{ plan.pastdue_tasks }}
+                            </div>
+                        </div>
+                        <div class="eight columns">
+                            {% trans 'Projects/Tasks' %}
+                            <span class="past-due-label">
+                                &quot;{% trans 'Past Due' %}&quot;
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <div class="jeopardy circle">
+                                {{ plan.jeopardy_tasks }}
+                            </div>
+                        </div>
+                        <div class="eight columns">
+                            {% trans 'Projects/Tasks' %}
+                            <span class="jeopardy-label">
+                                &quot;{% trans 'In Jeopardy' %}&quot;
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <div class="on-track circle">
+                                {{ plan.ontrack_tasks }}
+                            </div>
+                        </div>
+                        <div class="eight columns">
+                            {% trans 'Projects/Tasks' %}
+                            <span class="on-track-label">
+                                &quot;{% trans 'On Track' %}&quot;
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <div class="complete circle">
+                                {{ plan.completed_tasks }}
+                            </div>
+                        </div>
+                        <div class="eight columns">
+                            {% trans 'Projects/Tasks' %}
+                            <span class="complete-label">
+                                &quot;{% trans 'Complete' %}&quot;
+                            </span>
+                        </div>
+                    </div>
+                    <hr/>
+                    <h3 class="cmo-label">{% trans 'Resource Task Status' %}</h3>
+                </div>
+                <div class="push_two five columns diamonds">
+                    <div class="row">
+                        <div class="two columns">
+                            <div class="diamond past-due-milestone"></div>
+                            <div class="diamond-content">
+                                 {{ plan.pastdue_milestones }}                               
+                            </div>
+                        </div>
+                        <div class="eight columns">
+                            {% trans 'Milestones' %}
+                            <span class="past-due-label">
+                                &quot;{% trans 'Past Due' %}&quot;
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <div class="diamond jeopardy-milestone"></div>
+                            <div class="diamond-content">
+                                {{ plan.jeopardy_milestones }}
+                            </div>
+                        </div>
+                        <div class="eight columns">
+                            {% trans 'Milestones' %}
+                            <span class="jeopardy-label">
+                                &quot;{% trans 'In Jeopardy' %}&quot;
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <div class="diamond on-track-milestone"></div>
+                            <div class="diamond-content">
+                                {{ plan.ontrack_milestones }}
+                            </div>
+                        </div>
+                        <div class="eight columns">
+                            {% trans 'Milestones' %}
+                            <span class="on-track-label">
+                                &quot;{% trans 'On Track' %}&quot;
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <div class="diamond complete-milestone"></div>
+                            <div class="diamond-content">
+                                {{ plan.completed_milestones }}                            
+                            </div>
+                        </div>
+                        <div class="eight columns">
+                            {% trans 'Milestones' %}
+                            <span class="complete-label">
+                                &quot;{% trans 'Complete' %}&quot;
+                            </span>
+                        </div>
+                    </div>
+                    <hr/>
+                    <h3 class="cmo-label">{% trans 'Resource Milestone Status' %}</h3>
+                </div>
+            </div>
+        </div>
+      </div><!-- table wrapper -->
+    </div>
+    
+            </section>
+        </div>
+    </body>
+</html>
+
+

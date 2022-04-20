@@ -1,0 +1,84 @@
+{% extends 'reports/base_reports.html' %}
+{% load icmo_utils %}
+{% block report_title_head %}Custom Report - Vertical{% endblock %}
+{% block report_title_page_title %}Custom Report - Vertical{% endblock %}
+{% block report_title_box_title %}Custom Report - Vertical -
+    {{ report_period|title }}{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function () {
+            {% if fields %}
+                ICMO.periods.periodGrid.create($('#dataGrid'), [
+                            {% for field in fields %}
+                                '{{field}}',
+                            {% endfor %}
+                        ],
+                        [{% for group in groups %}'{{ group }}',{% endfor %}],
+                        '{{values_display}}'
+                );
+            {% endif %}
+        }());
+    </script>
+{% endblock %}
+{% block box_body %}
+    {% load deslugify from icmo_utils %}
+    <div class="filter well">
+        <form class="form-inline" method="GET">
+            <div class="form-group">
+                <label for="periodMonth">Period: </label>
+                <select class="form-control" id="reportMonth" name="reportMonth">
+                    {% for period in report_periods %}
+                        <option value="{{ period }}"
+                                {% if period == report_period %}selected{% endif %}>
+                            {{ period|deslugify }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="resolution">Scope: </label>
+                <select class="form-control" id="reportMonth" name="resolution">
+                    {% for resolution_choice in resolution_choices %}
+                        <option value="{{ resolution_choice }}"
+                                {% if resolution_choice == resolution %}selected{% endif %}>
+                            {{ resolution_choice|deslugify }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fields">Fields: </label>
+                {% for field in field_choices %}
+                    <input type="checkbox" name="fields" value="{{ field }}"
+                           {% if field in fields %}checked{% endif %}> {{ field|deslugify }}
+                    &nbsp; &nbsp;
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label for="valuesDisplay">Values Display: </label>
+                <select class="form-control" id="valuesDisplay" name="valuesDisplay">
+                    <option value="consolidated"
+                            {% if values_display == 'consolidated' %}selected{% endif %}>Actual /
+                        Plan
+                    </option>
+                    <option value="actual" {% if values_display == 'actual' %}selected{% endif %}>
+                        Actual Only
+                    </option>
+                    <option value="plan" {% if values_display == 'plan' %}selected{% endif %}>Plan
+                        Only
+                    </option>
+                    <option value="variance"
+                            {% if values_display == 'variance' %}selected{% endif %}>Variance Only
+                    </option>
+                    <option value="all" {% if values_display == 'all' %}selected{% endif %}>All
+                    </option>
+
+                </select>
+            </div>
+            <input type="submit" class="btn btn-bordered btn-primary" value="Run Report"/>
+        </form>
+    </div>
+    <div id="dataGrid"
+         data-api-url="{{ revenue_plan_period_api_url }}?resolution={{ resolution }}&&period={{ report_period }}"
+    ></div>
+
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils crispy_forms_tags %}
+{% block title %}Notifications Management{% endblock %}
+{% block page_title %}Notifications Management{% endblock %}
+{% block compressed_js %}
+    {{ block.super }}
+    <script src="{% static 'js/notifications.js' %}" type="text/javascript"></script>
+{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    {% include 'misc_widgets/grid_row_tools.html' %}
+    <script type="text/javascript">
+        $(function () {
+            {% for company in companies %}
+                ICMO.apps.notifications.createGrid($('#grid-{{company.slug}}'));
+            {% endfor %}
+            ICMO.apps.notifications.initAddNotificationForm();
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    {% for company in companies %}
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">{{ company.name }}
+                            <div class="box-tools pull-right">
+                                <button class="btn btn-box-tool" data-widget="collapse"><i
+                                        class="fa fa-minus"></i></button>
+                            </div>
+                        </h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="box-tools grid-{{ company.slug }}-tools">
+                            <button class="btn btn-primary btn-bordered btn-sm grid-add-notification"
+                                    title="Add a notification">
+                                <i class="fa fa-plus"></i>&nbsp;
+                                Notification
+                            </button>
+                            <button class="btn btn-primary btn-sm grid-cancel"
+                                    title="Cancel changes"
+                                    disabled aria-disabled="true">
+                                <i class="fa fa-undo"></i>
+                            </button>
+                            <div class="btn-group" role="group" aria-label="...">
+                                <button class="btn btn-primary btn-sm grid-pdf"
+                                        title="Export to PDF">
+                                    <i class="fa fa-file-pdf-o"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm grid-excel"
+                                        title="Export to Excel">
+                                    <i class="fa fa-file-excel-o"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="grid-{{ company.slug }}"
+                             class="grid-multiline-headers"
+                             data-tools="grid-{{ company.slug }}-tools"
+                             data-id-field="id"
+                             data-api-url="
+                                     {{ api_url }}{{ company.slug }}/users/{{ user.email }}/notifications/">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">No Companies</h3>
+                    </div>
+                    <div class="box-body">
+                        You are not a member of any companies. Join a company in order to manage
+                        your notifications for that company.
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="modal fade" id="addNotificationModal" tabindex="-1" role="dialog" data-api-url=""
+         data-company-slug=""
+         aria-labelledby="addNotificationModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addNotificationModalLabel">Add Notification</h4>
+                </div>
+                <div class="modal-body">
+                    {% crispy form %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default btn-bordered"
+                            data-dismiss="modal">Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-bordered">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

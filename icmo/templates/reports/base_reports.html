@@ -1,0 +1,30 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize crispy_forms_tags %}
+{% block title %}Reports - {% block report_title_head %}{% endblock %}{% endblock %}
+{% block page_title %}Reports{% endblock %}
+{% block page_subtitle %}<a href="{% blank_kwargs_url 'reports_index' %}">Index</a>{% endblock %}
+{% block compressed_js %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'js/charts.js' %}" ></script>
+    <script type="text/javascript" src="{% static 'js/dashboards.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/period_grids.js' %}"></script>
+{% endblock %}
+{% block page_js %}
+{{ block.super }}
+    {% include 'misc_widgets/horizontal_period_summary_grid_kendo_templates.html' %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">{% block report_title_box_title %}{% endblock %}</h3>
+                </div>
+                <div class="box-body">
+                    {% block box_body %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

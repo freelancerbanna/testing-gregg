@@ -1,0 +1,38 @@
+<form method="POST">
+    {% csrf_token %}
+    <table class="table table-striped">
+        <tr>
+            <th>
+                Salesforce field:  Lead {{ salesforce.lead_segment_field }}
+                {% if salesforce.opportunity_segment_field %}
+                > Opportunity {{ salesforce.opportunity_segment_field }}
+                {% endif %}
+            {% if salesforce.account_segment_field %}
+                > Account {{ salesforce.account_segment_field }}
+                {% endif %}
+            </th>
+            <th>iCMO Segment</th>
+        </tr>
+        {% for industry_map in segments_map %}
+            <tr>
+                <td>{{ industry_map.sfdc_value_1 }}</td>
+                <td>
+                    <select name="industry-{{ industry_map.sfdc_value_2 }}">
+                        <option value="">None</option>
+                        {% for segment in segments %}
+                            <option value="{{ segment.slug }}"
+                                    {% if industry_map.segment == segment %}selected{% endif %}>
+                                {{ segment.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="form-actions pull-right">
+        <input type="submit" name="submit" value="Save"
+               class="btn btn-primary btn-bordered"
+               id="submit-save">
+    </div>
+</form>

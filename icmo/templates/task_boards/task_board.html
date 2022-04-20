@@ -1,0 +1,519 @@
+{% extends 'base_main.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize %}
+{% block title %}Task Boards{% endblock %}
+{% block page_title %}Task Boards{% endblock %}
+{% block compressed_css %}
+    {{ block.super }}
+    <link href="{% static 'x-editable/dist/bootstrap3-editable/css/bootstrap-editable.css' %}"
+          rel="stylesheet">
+    {# x-editable only supports Select2 3.5.3 not 4. #}
+    <link href="{% static 'select2/select2.css' %}" rel="stylesheet"/>
+    <link href="{% static 'select2/select2-bootstrap.css' %}" rel="stylesheet"/>
+{% endblock %}
+{% block compressed_js %}
+    {{ block.super }}
+    {# SELECT 2 FULL JS IS REQUIRED #}
+    <script type="text/javascript" src="{% static 'select2/select2.js' %}"></script>
+    {# WARNING MOMENT.MIN.JS IS NOT COMPATIBLE WITH COMPRESS! #}
+    <script type="text/javascript" src="{% static 'moment/moment.js' %}"></script>
+    <script type="text/javascript"
+            src="{% static 'x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/task_boards.js' %}"></script>
+{% endblock %}
+{% block page_js %}
+    {{ block.super }}
+    <script type="text/x-kendo-template" id="blankTaskList">
+        <div class="col-sm-4 task-list" data-uuid="#= uuid #" data-kendo-uid="#= uid #">
+            <div class="box">
+                <div class="box-header">
+                    <div class="pull-right">
+                        <button class="btn btn-sm btn-danger btn-bordered delete-tasklist"
+                                title="delete">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                    <b data-type="text" data-name="name" class="editable">#= name #</b>
+                </div>
+                <div class="box-body">
+
+                </div>
+                <div class="box-footer">
+                    <button class="btn btn-primary col-sm-12 add-task">Add Task</button>
+                </div>
+            </div>
+        </div>
+    </script>
+    <script type="text/x-kendo-template" id="blankTask">
+        <div class="task" data-uuid="#= uuid #" data-task_list-uuid="#= task_list #"
+             data-kendo-uid="#= uid #">
+            <div class="task-header">
+                {% include 'task_boards/includes/task_type_icon.html' %}
+                <span class="label
+                # if (status == 'unstarted') { # label-default # }
+                else if (status == 'started') { # label-primary # }
+                else if (status == 'finished') { # label-info # }
+                else if (status == 'delivered') { # label-warning # }
+                else if (status == 'rejected') { # label-danger # }
+                else if (status == 'accepted') { # label-success # } #
+                pull-right">#= status_name #</span>
+                <b class="editable" data-name="name" data-type="text">#= name #</b>
+
+            </div>
+            <div class="task-path small">
+                # if (segment) { #
+                #=segment_name #
+                # if (program) { #
+                : #=program_name #
+                # if (budget_line_item) { #
+                , #= budget_line_item_name #
+                # } #
+                # } else if (budget_line_item) { #
+                : #= budget_line_item_name #
+                # } #
+                # } #
+            </div>
+            <div class="task-assigned">#= user_initials #</div>
+            <div class="task-icons">
+                <ul>
+                    # if (description) { #
+                    <li><i class="fa fa-align-left"></i></li>
+                    # } #
+                    <li><i class="fa fa-comment"></i> #= comments_count #</li>
+                    <!--<li><i class="fa fa-paperclip"></i> 0</li>-->
+                    <li><i class="fa fa-check-square-o"></i> #= checklist_status #</li>
+                </ul>
+                <div class="clearfix">&nbsp;</div>
+            </div>
+            <div class="collapse" id="collapseTask-#= uuid #">
+                <hr>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active small">
+                        <a href="\\#activity-#= uuid #" aria-controls="home"
+                           role="tab" data-toggle="tab">Activity</a>
+                    </li>
+                    <li role="presentation" class="small">
+                        <a href="\\#details-#= uuid #" aria-controls="profile" role="tab"
+                           data-toggle="tab">Details</a></li>
+                    <li role="presentation" class="small">
+                        <a href="\\#schedule-#= uuid #" aria-controls="profile" role="tab"
+                           data-toggle="tab">Schedule</a></li>
+                    <li role="presentation" class="small">
+                        <a href="\\#history-#= uuid #" aria-controls="profile" role="tab"
+                           data-toggle="tab">History</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="activity-#= uuid #">
+                        <div>
+                            <b>Status</b><br>
+                            &nbsp;&nbsp;
+                            <a class="editable" data-name='status' data-type="select"
+                               data-value="#= status #"
+                               data-source='[{% spaceless %}
+                             {% for status in status_choices %}{% spaceless %}
+                                    {value: "{{ status.0 }}", text: "{{ status.1 }}"},
+                                {% endspaceless %}{% endfor %}
+                            {% endspaceless %}]'>
+                                #= status_name #
+                            </a>
+                            &nbsp; &nbsp;
+                            # if (status == 'unstarted') { #
+                            <button class="status-change btn btn-sm btn-primary btn-bordered"
+                                    data-next-status="started">Start
+                            </button>
+                            # } else if (status == 'started') { #
+                            <button class="status-change btn btn-sm btn-info btn-bordered"
+                                    data-next-status="finished">Finish
+                            </button>
+                            # } else if (status == 'finished') { #
+                            <button class="status-change btn btn-sm btn-warning btn-bordered"
+                                    data-next-status="delivered">Deliver
+                            </button>
+                            # } else if (status == 'delivered') { #
+                            <button class="status-change btn btn-sm btn-success btn-bordered"
+                                    data-next-status="accepted">Accept
+                            </button>
+                            <button class="status-change btn btn-sm btn-danger btn-bordered"
+                                    data-next-status="rejected">Reject
+                            </button>
+                            # } else if (status == 'rejected') { #
+                            <button class="status-change btn btn-sm btn-primary btn-bordered"
+                                    data-next-status="started">Restart
+                            </button>
+                            # } #
+                        </div>
+                        <br>
+                        <p><b>Checklist</b></p>
+                        <div class="well">
+                            <ul class="checklist">
+                                # for (var i=0;i
+                                <checklist.length
+                                        ;i++) { #
+                                <li class="existing-checklist"
+                                    data-checklist-uuid="#= checklist[i].uuid #">
+                                    <div class="row">
+                                        <div class="col-sm-1">
+                                            <input type='checkbox' # if(checklist[i].completed){ #
+                                                   checked # } #>
+                                        </div>
+                                        <div class="col-sm-8">
+                                            <span class='rename-checklist' data-type="text"
+                                                  data-value="#= checklist[i].name #">#= checklist[i].name #</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <button class="btn btn-sm btn-danger btn-bordered delete-checklist"
+                                                    title="delete">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </li>
+                                # } #
+                                <li class="new-checklist">
+                                    <div class="row">
+                                        <div class="col-sm-1">
+                                            <input type="checkbox">
+                                        </div>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="input-sm form-control">
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <button class="btn btn-sm btn-primary btn-bordered add-new-checklist">
+                                                <i class="fa fa-check-square"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <!--
+                        <br>
+                        <p><b>Attachments</b></p>
+                        <div class="well">
+                                <p>Attached is the first version of the eBook. Please review
+                                    and comment. Thank you.</p>
+                                <a href=""><i class="fa fa-file-word-o"></i>eBook Draft.docx</a>
+                            </div>
+                            -->
+                        <br>
+                        <p><b>Comments</b></p>
+                        # for (var i=0;i<comments.length;i++) { #
+                        <div class="well comment" data-comment-uuid="#= comments[i].uuid #">
+                            <div class="pull-right">
+                                <span class='author-initials'>#= comments[i].author_initials #</span><br>
+                                # if (comments[i].author == ICMO.user) { #
+                                <button class="btn btn-sm btn-danger btn-bordered delete-comment">
+                                    <i class="fa fa-trash"></i></button>
+                                # } #
+                            </div>
+                            <b class="small">#= moment(comments[i].created).format('LLLL')
+                                #</b><br>
+                            <p>
+                                # if (comments[i].author == ICMO.user) { #
+                                <span class="edit-comment" data-type="textarea"
+                                      data-name="comment">#= comments[i].comment #</span>
+                                # } else { #
+                                #= comments[i].comment #
+                                # } #
+                            </p>
+                            <div class="clearfix">&nbsp;</div>
+                        </div>
+                        # } #
+                        <div>
+                        <textarea class="form-control new-comment" rows="3"
+                                  placeholder="Add a comment"></textarea>
+                            <br>
+                            <!--<button class="btn btn-sm btn-primary btn-bordered"><i
+                                    class="fa fa-paperclip"></i></button> -->
+                            <!--<button class="btn btn-sm btn-primary btn-bordered"><i
+                                    class="fa fa-check-square add-checklist"></i></button>-->
+                            <button class="btn btn-sm btn-primary pull-right btn-bordered add-comment">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="details-#= uuid #">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <p>
+                                    <b>Task Description</b><br>
+                                    <a class="editable" data-type="textarea"
+                                       data-name="description">#= description #</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p>
+                                    <b>Task Type</b><br>
+                                    {% include 'task_boards/includes/task_type_icon.html' %}
+                                    <a class="editable" data-name="task_type" data-type="select"
+                                       data-value="#= task_type #"
+                                       data-source='[{% spaceless %}
+                             {% for task_type in task_type_choices %}{% spaceless %}
+                                    {value: "{{ task_type.0 }}", text: "{{ task_type.1 }}"},
+                                {% endspaceless %}{% endfor %}
+                            {% endspaceless %}]'>
+                                        {{ task_type_name }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <p>
+                                <b>Segment</b><br>
+                                <a class="editable" data-name="segment" data-type="select"
+                                   data-value="#= segment #"
+                                   data-source='[{% spaceless %}
+                             {% for segment in segment_list %}{% spaceless %}
+                                    {value: "{{ segment.0 }}", text: "{{ segment.1 }}"},
+                                {% endspaceless %}{% endfor %}
+                            {% endspaceless %}]'># if (segment_name){segment_name} #</a>
+                            </p>
+                        </div>
+                        <div class="row">
+
+                            <div class="col-sm-6">
+                                <p>
+                                    <b>Program</b><br>
+                                    # if (segment) { #
+                                    <a class="program-select"># if (program){program_name} #</a>
+                                    # } else { #
+                                    <i>Pick a segment first</i>
+                                    # } #
+                                </p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p>
+                                    <b>Budget Line Item</b><br>
+                                    # if (segment) { #
+                                    <a class="bli-select"># if
+                                        (budget_line_item_name){budget_line_item_name} #</a>
+                                    # } else { #
+                                    <i>Pick a segment first</i>
+                                    # } #
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <p>
+                                <b>Private</b><br>
+                                <input title="Only users assigned to this task will see this task"
+                                       class='private' type="checkbox" data-name="private" # if
+                                       (private){ # checked # } #/>
+                            </p>
+                        </div>
+                        <p><b>Resources</b></p>
+                        <div class="well">
+                            # for (var i=0;i<assigned_users.length;i++){ #
+                            <div class="row existing-user-container"
+                                 data-user-email="#= assigned_users[i].user #">
+                                <div class="col-sm-2"><span class="author-initials bg-gray">#= assigned_users[i].user_initials #</span>
+                                </div>
+                                <div class="col-sm-5">#= assigned_users[i].user_name #</div>
+                                <div class="col-sm-3">
+                                    <span class='existing-user-role'
+                                          data-value="#= assigned_users[i].role #"
+                                          data-type="select"
+                                          data-mode="popup"
+                                          data-source='[{% spaceless %}
+                             {% for role in role_choices %}{% spaceless %}
+                                    {value: "{{ role.0 }}", text: "{{ role.1 }}"},
+                                {% endspaceless %}{% endfor %}
+                            {% endspaceless %}]'>
+                                        #= assigned_users[i].role_name #
+                                    </span>
+                                </div>
+                                <div class="col-sm-2">
+                                    <button class="btn btn-danger btn-bordered btn-sm delete-user">
+                                        <i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                            # } #
+                            <div class="row add-user-container">
+                                <div class="col-sm-2"></div>
+                                <div class="col-sm-5">
+                                    <select class="add-user-email">
+                                        <option value="">Select a User</option>
+                                        {% for user in user_choices %}
+                                            <option value="{{ user.0 }}">{{ user.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-sm-3">
+                                    <select class="add-user-role">
+                                        {% for role in role_choices %}
+                                            <option value="{{ role.0 }}">{{ role.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <button class="btn btn-primary btn-bordered btn-sm add-user">
+                                        <i class="fa fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <p>
+                                    <b>Tags</b><br>
+                                    <a class='edit-tags' data-type="select2"
+                                       data-name='tags_list' data-value="#= tags_list.join() #"
+                                       data-source='[{% spaceless %}
+                             {% for tag in tag_choices %}{% spaceless %}
+                                    {id: "{{ tag.1 }}", text: "{{ tag.1 }}"},
+                                {% endspaceless %}{% endfor %}
+                            {% endspaceless %}]'
+                                    >
+                                        # for (var i=0;i<tags.length;i++) { #
+                                                #=tags[i].name ## if (i<tags.length-1) { #,# } #
+                                                # } #
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <p>Delete Task<br>
+                                <button class="btn btn-sm btn-danger btn-bordered delete-task"
+                                        title="delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="schedule-#= uuid #">
+                        <div>
+                            <p>
+                                <b>Priority</b><br>
+                                <a class="editable" data-name="priority" data-type="select"
+                                   data-value="#= priority #"
+                                   data-source='[{% spaceless %}
+                             {% for priority in priority_choices %}{% spaceless %}
+                                    {value: "{{ priority.0 }}", text: "{{ priority.1 }}"},
+                                {% endspaceless %}{% endfor %}
+                            {% endspaceless %}]'>#= priority_name #</a>
+                            </p>
+                        </div>
+                        <!--
+                            <div>
+                                <p>
+                                    <b>Include on Gantt</b><br>
+                                    <input class='assign_gantt' type="checkbox"
+                                           data-name="assign_gantt" # if (gantt_task){ # checked # }
+                                           #/>
+                                </p>
+                            </div>
+                            -->
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="history-#= uuid #">
+                        <table class="table table-striped small history">
+                            <tr>
+                                <th>Date</th>
+                                <th>Actor</th>
+                                <th>Action</th>
+                                <th>Target</th>
+                            </tr>
+                            # for (var i; i<history_list.length; i++) { #
+                            <tr>
+                                <td>#= moment(history_list[i].created).format('L LT') #</td>
+                                <td>#= history_list[i].actor #</td>
+                                <td>#= history_list[i].action #</td>
+                                <td>#= history_list[i].target #</td>
+                            </tr>
+                            # } #
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="task-expander">
+                # for(var i=0;i<tags.length;i++){ #
+                <span class="label label-warning">#= tags[i].name #</span>
+                # } #
+                <button class="btn btn-primary pull-right task-expander-btn" type="button"
+                        data-toggle="collapse"
+                        data-target="\\#collapseTask-#= uuid #" aria-expanded="false"
+                        aria-controls="collapseTask">
+                    <i class="fa fa-expand"></i>
+                </button>
+            </div>
+            <div class="clearfix">&nbsp;</div>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.fn.editable.defaults.mode = 'inline';
+            ICMO.apps.task_boards.tags = [
+                {% for tag in tag_choices %}"{{ tag.1 }}"{% if not forloop.last %}, {% endif %}{% endfor %}
+            ];
+            ICMO.apps.task_boards.task_board.createTaskBoard($('#taskBoard'), "{{ user.email }}", "{{ filter_args|safe }}");
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box">
+                <div class="box-header no-top-padding no-bottom-padding">
+                    <h3 class="no-top-margin">{{ task_board.name }}</h3>
+                </div>
+                <div class="box-body no-top-padding">
+                    <h4>Filter:</h4>
+                    <div class="row task-filter">
+                        <div class="col-xs-4">
+                            <b>Segment:</b>
+                            <select class="segment-filter">
+                                <option value="">All</option>
+                                {% for segment in segment_list %}
+                                    <option value="{{ segment.0 }}"
+                                            {% if filters.segment == segment.0 %}selected{% endif %}
+                                    >{{ segment.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-xs-4">
+                            <b>Program:</b>
+                            {% if filter_programs %}
+                                <select class="program-filter">
+                                    <option value="">All</option>
+                                    {% for program in filter_programs %}
+                                        <option value="{{ program.0 }}"
+                                                {% if filters.program == program.0 %}selected{% endif %}
+                                        >{{ program.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <i>Select a segment first.</i>
+                            {% endif %}
+                        </div>
+                        <div class="col-xs-4">
+                            <b>Budget Line Item:</b>
+                            {% if filter_blis %}
+                                <select class="bli-filter">
+                                    <option value="">All</option>
+                                    {% for bli in filter_blis %}
+                                        <option value="{{ bli.0 }}"
+                                                {% if filters.bli == bli.0 %}selected{% endif %}
+                                        >{{ bli.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <i>Select a segment first.</i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row task-board" id="taskBoard"
+         data-tasks-api-url="{{ tasks_api_url }}"
+         data-task-lists-api-url="{{ task_lists_api_url }}"
+         data-segments-list-api-url="{{ segments_list_api_url }}">
+
+        <div class="col-sm-4" id="add-task-list-container">
+            <div class="box">
+                <button class="btn btn-primary col-sm-12 add-task-list">Add a List</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

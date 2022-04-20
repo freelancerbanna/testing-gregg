@@ -1,0 +1,62 @@
+{% extends 'dashboards/base_dashboard.html' %}
+{% load static from staticfiles %}
+{% load i18n icmo_utils humanize %}
+{% block title %}CMO Performance Dashboard{% endblock %}
+{% block page_title %}CMO Performance Dashboard{% endblock %}
+{% block app_summary_js %}
+    <script type="text/javascript">
+        var planMonthPeriodDataSource = ICMO.core.getDataSourceByURL('{{ revenue_plan_period_api_url }}?period_type=month&resolution=revenue_plan');
+        ICMO.charts.bulletChart($('#company-{{ company.slug }}MqlCostBulletChart'), {{company.funnel_data.cost_per_mql_actual.amount}}, {{company.funnel_data.cost_per_mql_plan.amount}}, true);
+        ICMO.charts.bulletChart($('#company-{{ company.slug }}SqlCostBulletChart'), {{company.funnel_data.cost_per_sql_actual.amount}}, {{company.funnel_data.cost_per_sql_plan.amount}}, true);
+
+        {% include 'dashboards/includes/bulletchartsjs.html' %}
+
+        ICMO.apps.dashboards.summaryGrid($("#grid-mql-company-{{ company.slug }}"), {
+            periodType: 'months',
+            nameField: {field: 'segment_name', title: 'Segment', width: 300},
+            field: 'mql',
+            fieldAggregate: 'sum'
+        });
+        ICMO.apps.dashboards.summaryGrid($("#grid-sql-company-{{ company.slug }}"), {
+            periodType: 'months',
+            nameField: {field: 'segment_name', title: 'Segment', width: 300},
+            field: 'sql',
+            fieldAggregate: 'sum'
+        });
+        ICMO.apps.dashboards.summaryGrid($("#grid-sales-company-{{ company.slug }}"), {
+            periodType: 'months',
+            nameField: {field: 'segment_name', title: 'Segment', width: 300},
+            field: 'sales',
+            fieldAggregate: 'sum'
+        });
+    </script>
+{% endblock %}
+{% block app_segment_js %}
+    <script type="text/javascript">
+        {% for segment in segments %}
+            var planMonthPeriodDataSource = ICMO.core.getDataSourceByURL('{{ revenue_plan_period_api_url }}?period_type=month&resolution=revenue_plan');
+            ICMO.charts.bulletChart($('#segment-{{ segment.slug }}MqlCostBulletChart'), {{segment.funnel_data.cost_per_mql_actual.amount}}, {{segment.funnel_data.cost_per_mql_plan.amount}}, true);
+            ICMO.charts.bulletChart($('#segment-{{ segment.slug }}SqlCostBulletChart'), {{segment.funnel_data.cost_per_sql_actual.amount}}, {{segment.funnel_data.cost_per_sql_plan.amount}}, true);
+
+
+            ICMO.apps.dashboards.summaryGrid($("#grid-mql-segment-{{ segment.slug }}"), {
+                periodType: 'months',
+                nameField: {field: 'program_name', title: 'Program', width: 300},
+                field: 'sql',
+                fieldAggregate: 'sum'
+            });
+            ICMO.apps.dashboards.summaryGrid($("#grid-sql-segment-{{ segment.slug }}"), {
+                periodType: 'months',
+                nameField: {field: 'program_name', title: 'Program', width: 300},
+                field: 'mql',
+                fieldAggregate: 'sum'
+            });
+            ICMO.apps.dashboards.summaryGrid($("#grid-sales-segment-{{ segment.slug }}"), {
+                periodType: 'months',
+                nameField: {field: 'program_name', title: 'Program', width: 300},
+                field: 'sales',
+                fieldAggregate: 'sum'
+            });
+        {% endfor %}
+    </script>
+{% endblock %}
